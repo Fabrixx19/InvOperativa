@@ -5,7 +5,6 @@ class EstadoArticulo(models.Model):
     nombreEA = models.CharField(max_length=30,null=False)
     fechaHoraBajaEA = models.DateField(null=True, blank=True)
 
-
 class Articulo(models.Model):
     codArticulo = models.AutoField(primary_key=True)
     fechaAltaArticulo = models.DateField(auto_now_add=True)
@@ -14,6 +13,19 @@ class Articulo(models.Model):
     stockArticulo = models.IntegerField()
     estado = models.ForeignKey(EstadoArticulo, on_delete=models.CASCADE, related_name='articulos')
 
+class Proveedor(models.Model):
+    codProveedor = models.AutoField(primary_key=True)
+    fechaBajaProveedor = models.DateField(null=True, blank=True)
+    nombreProveedor = models.CharField(null=False, blank=False, max_length=30)
+    tiempoDeDemora = models.DateField(null=False, blank=False)
+
+class ArticuloProveedor(models.Model):
+    codAP = models.AutoField(primary_key=True)
+    puntoPedido = models.IntegerField()
+    stockSeguridad = models.IntegerField()
+    loteOptimo = models.IntegerField()
+    articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='articuloProveedor')
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, related_name='articuloProveedor')
 
 class Demanda(models.Model):
     codDemanda = models.IntegerField(primary_key=True)
@@ -25,11 +37,9 @@ class Venta(models.Model):
     cantVenta = models.IntegerField()
     fechaVenta = models.DateField(auto_now_add=True)
     articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='ventas')
-
     #Una venta Tiene solo una demanda, pero una demanda muchas venttas
     demanda = models.ForeignKey(Demanda, on_delete=models.CASCADE, related_name='ventas')
     
-
 class Prediccion_Demanda(models.Model):
     codPD = models.IntegerField(primary_key=True)
     cantPeriodos = models.IntegerField(null=False, blank=False)
@@ -39,22 +49,15 @@ class Prediccion_Demanda(models.Model):
     mesPrimerPeriodo = models.DateField()
     demandas = models.ManyToManyField(Demanda, related_name="predicciones")
 
-
 class EstadoOrdenCompra(models.Model):
     codEC = models.AutoField(primary_key=True)
     nombreEC = models.CharField(null=False, blank=False, max_length=30)
     fechaHoraBajaEC = models.DateField(null=True, blank=True)
 
-
-class Proveedor(models.Model):
-    codProveedor = models.AutoField(primary_key=True)
-    fechaBajaProveedor = models.DateField(null=True, blank=True)
-    nombreProveedor = models.CharField(null=False, blank=False, max_length=30)
-    
-
 class OrdenDeCompra(models.Model):
     codODC = models.AutoField(primary_key=True)
     cantidad = models.IntegerField()
-    estado = models.ForeignKey(EstadoOrdenCompra, on_delete=models.CASCADE, related_name='ordenes')
+    estado = models.ForeignKey(EstadoOrdenCompra, on_delete=models.CASCADE, related_name='ordenDeCompra')
     prediccion = models.OneToOneField(Prediccion_Demanda, on_delete=models.CASCADE)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, related_name='ordenDeCompra')
     
