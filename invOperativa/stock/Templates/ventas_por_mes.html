@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Total de Ventas por Mes</title>
+</head>
+<body>
+    <h1>Total de Ventas del Mes</h1>
+    <form method="get">
+        {{ form.as_p }}
+        <button type="submit">Confirmar</button>  <!-- Agrega el botón de confirmación -->
+    </form>
+    <p>El total de ventas para este mes es: {{ total_cant_ventas }}</p>
+</body>
+</html>
