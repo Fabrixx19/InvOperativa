@@ -35,7 +35,7 @@ class Demanda(models.Model):
 class Venta(models.Model):
     codVenta = models.AutoField(primary_key=True)
     cantVenta = models.IntegerField()
-    fechaVenta = models.DateField(auto_now_add=True)
+    fechaVenta = models.DateField()
     articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='ventas')
     #Una venta Tiene solo una demanda, pero una demanda muchas venttas
     demanda = models.ForeignKey(Demanda, on_delete=models.CASCADE, related_name='ventas')
