@@ -29,8 +29,11 @@ class ArticuloProveedor(models.Model):
 
 class Demanda(models.Model):
     codDemanda = models.IntegerField(primary_key=True)
-    valorDemanda = models.IntegerField()
-    mesDemanda = models.DateField()
+    demandaReal = models.IntegerField(default=0)
+    demandaPredecida = models.IntegerField(default=0)
+    mesDemanda = models.IntegerField()
+    anioDemanda = models.IntegerField()
+    articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='demandas')
 
 class Venta(models.Model):
     codVenta = models.AutoField(primary_key=True)
@@ -39,6 +42,7 @@ class Venta(models.Model):
     articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='ventas')
     #Una venta Tiene solo una demanda, pero una demanda muchas venttas
     demanda = models.ForeignKey(Demanda, on_delete=models.CASCADE, related_name='ventas')
+    
     
 class Prediccion_Demanda(models.Model):
     codPD = models.IntegerField(primary_key=True)
