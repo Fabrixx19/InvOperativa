@@ -64,4 +64,3 @@ class OrdenDeCompra(models.Model):
     estado = models.ForeignKey(EstadoOrdenCompra, on_delete=models.CASCADE, related_name='ordenDeCompra')
     prediccion = models.OneToOneField(Prediccion_Demanda, on_delete=models.CASCADE)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, related_name='ordenDeCompra')
-    

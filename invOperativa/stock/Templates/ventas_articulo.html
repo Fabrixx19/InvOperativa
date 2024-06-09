@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas del Artículo {{ articulo.nombreArticulo }}</title>
+</head>
+<body>
+    <h1>Ventas del Artículo {{ articulo.nombreArticulo }}</h1>
+    <a href="{% url 'lista_articulos' %}">Volver a la lista de artículos</a>
+    <table>
+        <thead>
+            <tr>
+                <th>Código Venta</th>
+                <th>Cantidad</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venta in ventas %}
+            <tr>
+                <td>{{ venta.codVenta }}</td>
+                <td>{{ venta.cantVenta }}</td>
+                <td>{{ venta.fechaVenta }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

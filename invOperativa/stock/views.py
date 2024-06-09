@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic import View, ListView
 from django.urls import reverse_lazy
 
 #Agregado por mi para ver si anda
@@ -80,6 +81,7 @@ class CrearVenta(CreateView):
         self.object.save()
         return super().form_valid(form)
 
+
 class CrearArticulo(CreateView):
     model = Articulo
     form_class = ArticuloForm
@@ -108,6 +110,7 @@ class CrearArticulo(CreateView):
                     defaults={'demandaReal': 0, 'demandaPredecida': 0}
                 )
 
+
 def obtener_stock(request):
     articulo_id = request.GET.get('articulo_id')
     if articulo_id:
@@ -120,3 +123,43 @@ def obtener_stock(request):
         stock = 'Selecciona un artículo'
 
     return JsonResponse({'stock': stock})   
+
+
+class ModificarArticulo(UpdateView):
+    model = Articulo
+    form_class = ArticuloForm
+    template_name = 'modificar_articulo.html'
+    success_url = reverse_lazy('lista_articulos')
+
+
+class DarDeBajaArticulo(View):
+    success_url = reverse_lazy('lista_articulos')
+    
+    def post(self, request, pk):
+        articulo = get_object_or_404(Articulo, pk=pk)
+        articulo.fechaBajaArticulo = datetime.now()  # Marca la fecha de baja como la fecha actual
+        articulo.save()
+        return redirect(self.success_url)
+    def get(self, request, pk):  # Opcional para debugging
+        return redirect(self.success_url)
+
+
+class ListaArticulos(ListView):
+    model = Articulo
+    template_name = 'lista_articulos.html'
+    context_object_name = 'articulos'
+
+    def get_queryset(self):
+        return Articulo.objects.filter(fechaBajaArticulo__isnull=True)   
+
+
+def ver_demandas_articulo(request, articulo_id):
+    articulo = get_object_or_404(Articulo, pk=articulo_id)
+    demandas = articulo.demandas.exclude(demandaPredecida=0, demandaReal=0).order_by('-anioDemanda', '-mesDemanda')
+    return render(request, 'demandas_articulos.html', {'articulo': articulo, 'demandas': demandas})
+
+
+def ver_ventas_articulo(request, articulo_id):
+    articulo = get_object_or_404(Articulo, pk=articulo_id)
+    ventas = articulo.ventas.order_by('-fechaVenta')
+    return render(request, 'ventas_articulo.html', {'articulo': articulo, 'ventas': ventas})

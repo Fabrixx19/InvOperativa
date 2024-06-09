@@ -36,5 +36,5 @@ class ArticuloForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['estado'].empty_label = None
         self.fields['estado'].label_from_instance = lambda obj: obj.nombreEA
-        
+
 

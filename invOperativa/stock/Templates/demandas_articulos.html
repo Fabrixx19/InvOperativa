@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demandas del Artículo {{ articulo.nombreArticulo }}</title>
+</head>
+<body>
+    <h1>Demandas del Artículo {{ articulo.nombreArticulo }}</h1>
+    <a href="{% url 'lista_articulos' %}">Volver a la lista de artículos</a>
+    <table>
+        <thead>
+            <tr>
+                <th>Código Demanda</th>
+                <th>Demanda Real</th>
+                <th>Demanda Predecida</th>
+                <th>Mes</th>
+                <th>Año</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for demanda in demandas %}
+            <tr>
+                <td>{{ demanda.codDemanda }}</td>
+                <td>{{ demanda.demandaReal }}</td>
+                <td>{{ demanda.demandaPredecida }}</td>
+                <td>{{ demanda.mesDemanda }}</td>
+                <td>{{ demanda.anioDemanda }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
