@@ -1,48 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Artículos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
-    <h1>Lista de Artículos</h1>
-    <a href="{% url 'crear_articulo' %}">Crear nuevo artículo</a>
-    <table>
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Stock</th>
-                <th>Estado</th>
-                <th>Modelo Inventario</th>
-                <th>Ventas</th>
-                <th>Demandas</th>
-                <th>Modificar</th>
-                <th>Baja</th>
-                <!-- Agrega más columnas según tus necesidades -->
-            </tr>
-        </thead>
-        <tbody>
-            {% for articulo in articulos %}
-            <tr>
-                <td>{{ articulo.codArticulo }}</td>
-                <td>{{ articulo.nombreArticulo }}</td>
-                <td>{{ articulo.stockArticulo }}</td>
-                <td>{{ articulo.estado.nombreEA }}</td>
-                <td>{{ articulo.modeloInventario.nombreMI }}</td>
-                <td><a href="{% url 'demandas_articulo' articulo.pk %}">Ver Demandas</a></td>
-                <td><a href="{% url 'ventas_articulo' articulo.pk %}">Ver Ventas</a></td>
-                <td><a href="{% url 'modificar_articulo' articulo.pk %}">Modificar</a></td>
-                <td><form method="post" action="{% url 'baja_articulo' articulo.pk %}">
-                    {% csrf_token %}
-                    <button onclick="return confirm('¿Estás seguro de que deseas dar de baja este artículo?');" type="submit">Dar de baja</button>
-                    </form>
-                </td>
-                <!-- Agrega más columnas según tus necesidades -->
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <h1 class="display-5 text-center text-warning">Lista de Artículos</h1>
+    <a href="{% url 'crear_articulo' %}"><i class="bi bi-plus-square-fill"></i></a>
+    <div class="container-fluid pb-3">
+        <table class="table table table-striped table-hover">
+            <thead >
+                <tr>
+                    <th style="background-color: rgba(221, 182, 9, 0.795);" scope="col">Código</th>
+                    <th style="background-color: rgba(221, 182, 9, 0.795);" scope="col">Nombre</th>
+                    <th style="background-color: rgba(221, 182, 9, 0.795);" scope="col">Stock</th>
+                    <th style="background-color: rgba(221, 182, 9, 0.795);" scope="col">Estado</th>
+                    <th style="background-color: rgba(221, 182, 9, 0.795);" scope="col">Modelo Inventario</th>
+                    <th style="background-color: rgba(221, 182, 9, 0.795);" scope="col">Ventas</th>
+                    <th style="background-color: rgba(221, 182, 9, 0.795);" scope="col">Demandas</th>
+                    <th style="background-color: rgba(221, 182, 9, 0.795);" scope="col">Modificar</th>
+                    <th style="background-color: rgba(221, 182, 9, 0.795);" scope="col">Baja</th>
+                    <!-- Agrega más columnas según tus necesidades -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for articulo in articulos %}
+                <tr>
+                    <td>{{ articulo.codArticulo }}</td>
+                    <td>{{ articulo.nombreArticulo }}</td>
+                    <td>{{ articulo.stockArticulo }}</td>
+                    <td>{{ articulo.estado.nombreEA }}</td>
+                    <td>{{ articulo.modeloInventario.nombreMI }}</td>
+                    <td><a href="{% url 'ventas_articulo' articulo.pk %}">Ver Ventas</a></td>
+                    <td><a href="{% url 'demandas_articulo' articulo.pk %}">Ver Demandas</a></td>
+                    <td class="text-center"><a href="{% url 'modificar_articulo' articulo.pk %}" class="btn btn-warning btn-sm me-3"><i class="bi bi-pencil"></i></a></td>
+                    <td class="text-center"><form method="post" action="{% url 'baja_articulo' articulo.pk %}">
+                        {% csrf_token %}
+                        <button onclick="return confirm('¿Estás seguro de que deseas dar de baja este artículo?');" type="submit"class="btn btn-danger btn-sm me-3">
+                            <i class="bi bi-trash3"></i></button>
+                        </form>
+                    </td>
+                    <!-- Agrega más columnas según tus necesidades -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>
