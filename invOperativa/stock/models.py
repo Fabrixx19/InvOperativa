@@ -5,6 +5,11 @@ class EstadoArticulo(models.Model):
     nombreEA = models.CharField(max_length=30,null=False)
     fechaHoraBajaEA = models.DateField(null=True, blank=True)
 
+class ModeloInventario(models.Model):
+    codMI = models.AutoField(primary_key=True)
+    nombreMI = models.CharField(max_length=30,null=False)
+    
+
 class Articulo(models.Model):
     codArticulo = models.AutoField(primary_key=True)
     fechaAltaArticulo = models.DateField(auto_now_add=True)
@@ -12,6 +17,7 @@ class Articulo(models.Model):
     nombreArticulo = models.CharField(max_length=30)
     stockArticulo = models.IntegerField()
     estado = models.ForeignKey(EstadoArticulo, on_delete=models.CASCADE, related_name='articulos')
+    modeloInventario = models.ForeignKey(ModeloInventario, on_delete=models.CASCADE, related_name="articulos")
 
 class Proveedor(models.Model):
     codProveedor = models.AutoField(primary_key=True)

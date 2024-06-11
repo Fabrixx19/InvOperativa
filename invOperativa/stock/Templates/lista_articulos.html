@@ -15,6 +15,7 @@
                 <th>Nombre</th>
                 <th>Stock</th>
                 <th>Estado</th>
+                <th>Modelo Inventario</th>
                 <th>Ventas</th>
                 <th>Demandas</th>
                 <th>Modificar</th>
@@ -28,7 +29,8 @@
                 <td>{{ articulo.codArticulo }}</td>
                 <td>{{ articulo.nombreArticulo }}</td>
                 <td>{{ articulo.stockArticulo }}</td>
-                <td>{{ articulo.estado }}</td>
+                <td>{{ articulo.estado.nombreEA }}</td>
+                <td>{{ articulo.modeloInventario.nombreMI }}</td>
                 <td><a href="{% url 'demandas_articulo' articulo.pk %}">Ver Demandas</a></td>
                 <td><a href="{% url 'ventas_articulo' articulo.pk %}">Ver Ventas</a></td>
                 <td><a href="{% url 'modificar_articulo' articulo.pk %}">Modificar</a></td>

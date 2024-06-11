@@ -30,11 +30,13 @@ class VentaForm(forms.ModelForm):
 class ArticuloForm(forms.ModelForm):
     class Meta:
         model = Articulo
-        fields = ['nombreArticulo', 'stockArticulo', 'estado']
+        fields = ['nombreArticulo', 'stockArticulo', 'estado', 'modeloInventario']
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['estado'].empty_label = None
         self.fields['estado'].label_from_instance = lambda obj: obj.nombreEA
+        self.fields['modeloInventario'].empty_label = None
+        self.fields['modeloInventario'].label_from_instance = lambda obj: obj.nombreMI
 
 
