@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Artículos</title>
+</head>
+<body>
+    <h1>Lista de Artículos</h1>
+    <a href="{% url 'crear_articulo' %}">Crear nuevo artículo</a>
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Stock</th>
+                <th>Estado</th>
+                <th>Modelo Inventario</th>
+                <th>Ventas</th>
+                <th>Demandas</th>
+                <th>Modificar</th>
+                <th>Baja</th>
+                <!-- Agrega más columnas según tus necesidades -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for articulo in articulos %}
+            <tr>
+                <td>{{ articulo.codArticulo }}</td>
+                <td>{{ articulo.nombreArticulo }}</td>
+                <td>{{ articulo.stockArticulo }}</td>
+                <td>{{ articulo.estado.nombreEA }}</td>
+                <td>{{ articulo.modeloInventario.nombreMI }}</td>
+                <td><a href="{% url 'demandas_articulo' articulo.pk %}">Ver Demandas</a></td>
+                <td><a href="{% url 'ventas_articulo' articulo.pk %}">Ver Ventas</a></td>
+                <td><a href="{% url 'modificar_articulo' articulo.pk %}">Modificar</a></td>
+                <td><form method="post" action="{% url 'baja_articulo' articulo.pk %}">
+                    {% csrf_token %}
+                    <button onclick="return confirm('¿Estás seguro de que deseas dar de baja este artículo?');" type="submit">Dar de baja</button>
+                    </form>
+                </td>
+                <!-- Agrega más columnas según tus necesidades -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

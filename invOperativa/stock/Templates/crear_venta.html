@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crear Venta</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Crear Venta</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div>
+            <label for="id_articulo">Stock Disponible:</label>
+            <span id="stock-disponible">Selecciona un artículo</span>
+        </div>
+        <button type="submit">Guardar</button>
+    </form>
+    {% if form.errors %}
+        <div class="errors">
+            <ul>
+            {% for field, errors in form.errors.items %}
+                <li>{{ field }}: {{ errors }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <script>
+        $(document).ready(function() {
+            $('#id_articulo').change(function() {
+                var articuloId = $(this).val();
+                if (articuloId) {
+                    $.ajax({
+                        url: '{% url "obtener_stock" %}',
+                        data: {
+                            'articulo_id': articuloId
+                        },
+                        success: function(data) {
+                            $('#stock-disponible').text(data.stock);
+                        },
+                        error: function(xhr, status, error) {
+                            $('#stock-disponible').text('Error al obtener el stock');
+                        }
+                    });
+                } else {
+                    $('#stock-disponible').text('Selecciona un artículo');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

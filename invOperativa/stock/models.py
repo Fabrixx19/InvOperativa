@@ -5,6 +5,11 @@ class EstadoArticulo(models.Model):
     nombreEA = models.CharField(max_length=30,null=False)
     fechaHoraBajaEA = models.DateField(null=True, blank=True)
 
+class ModeloInventario(models.Model):
+    codMI = models.AutoField(primary_key=True)
+    nombreMI = models.CharField(max_length=30,null=False)
+    
+
 class Articulo(models.Model):
     codArticulo = models.AutoField(primary_key=True)
     fechaAltaArticulo = models.DateField(auto_now_add=True)
@@ -12,6 +17,7 @@ class Articulo(models.Model):
     nombreArticulo = models.CharField(max_length=30)
     stockArticulo = models.IntegerField()
     estado = models.ForeignKey(EstadoArticulo, on_delete=models.CASCADE, related_name='articulos')
+    modeloInventario = models.ForeignKey(ModeloInventario, on_delete=models.CASCADE, related_name="articulos")
 
 class Proveedor(models.Model):
     codProveedor = models.AutoField(primary_key=True)
@@ -29,8 +35,11 @@ class ArticuloProveedor(models.Model):
 
 class Demanda(models.Model):
     codDemanda = models.IntegerField(primary_key=True)
-    valorDemanda = models.IntegerField()
-    mesDemanda = models.DateField()
+    demandaReal = models.IntegerField(default=0)
+    demandaPredecida = models.IntegerField(default=0)
+    mesDemanda = models.IntegerField()
+    anioDemanda = models.IntegerField()
+    articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='demandas')
 
 class Venta(models.Model):
     codVenta = models.AutoField(primary_key=True)
@@ -39,6 +48,7 @@ class Venta(models.Model):
     articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='ventas')
     #Una venta Tiene solo una demanda, pero una demanda muchas venttas
     demanda = models.ForeignKey(Demanda, on_delete=models.CASCADE, related_name='ventas')
+    
     
 class Prediccion_Demanda(models.Model):
     codPD = models.IntegerField(primary_key=True)
@@ -60,4 +70,3 @@ class OrdenDeCompra(models.Model):
     estado = models.ForeignKey(EstadoOrdenCompra, on_delete=models.CASCADE, related_name='ordenDeCompra')
     prediccion = models.OneToOneField(Prediccion_Demanda, on_delete=models.CASCADE)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, related_name='ordenDeCompra')
-    
