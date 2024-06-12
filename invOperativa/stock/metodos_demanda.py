@@ -1,13 +1,56 @@
-import math
-# la X de prediccion va a ser Xp
-# la X de prediccion va a ser Xp
-# La X de demanda real mes anterior Xra
-Xpa = 142
-Xra = 153
-Alpha = 0.2
-def promedioExponencia(Xpa, Xra, Alpha):
-    Xp = math.ceil(Xpa + Alpha * (Xra - Xpa))
+from math import ceil
+
+def promedioExponencia(demandaPredecidaAnterior, demandaRealAnterior, cofSua):
+    Xp = ceil(demandaPredecidaAnterior + cofSua * (demandaRealAnterior - demandaPredecidaAnterior))
     return Xp
 
-resultado = promedioExponencia(Xpa, Xra, Alpha)
-print(f"El resultado de la predicción Xp es: {resultado}")
+def promedio_movil_ponderado(demanda):
+    suma=0
+    for d in demanda:
+        suma += d
+    demanda_predecida = ceil(suma/len(demanda))
+    print(demanda_predecida)
+
+def regresion_lineal():
+    Dr=[74,79,80,90,105,142,122]
+    mes=[1,2,3,4,5,6,7]
+    
+    AxD = []
+    for i in range(len(Dr)):
+        AxD.append(Dr[i] * mes[i])
+    print(AxD)
+    
+    #Funcion para calcular promedios
+    def calcular_promedio(lista):
+        if len(lista) == 0:
+            return 0.0
+        return sum(lista) / len(lista)
+    
+    def suma_de_cuadrados(lista):
+        return sum(elemento ** 2 for elemento in lista)
+    
+    PD = calcular_promedio(Dr) #Promedio Demanda
+    PM = calcular_promedio(mes) #Promedio mes
+    sumaCuadradosAnio = suma_de_cuadrados(mes)
+    print(f"El promedio general demanda real es: {PD:.2f}")
+    print(f"El promedio general años es: {PM:.2f}")
+    
+    b = ((sum(AxD)- mes[-1]*PD*PM)/(sumaCuadradosAnio-mes[-1]*(PM**2)))
+    print(f'b={b}')
+    
+    a = (PD-b*PM)
+    print(f'a={a}')
+    
+    pronostico2008 = b*(mes[-1]+1)+a
+    print(f'Pronostico2008={pronostico2008}')
+    
+def error_cuadrado_medio(demandas_real, demandas_predecidas):
+    sumatoria = 0
+    for i in range(len(demandas_real)):
+        sumatoria = (demandas_predecidas[i]-demandas_real[i])**2
+    error_cm = sumatoria/len(demandas_real)
+    return error_cm
+
+def error_porcentual():
+    
+    pass

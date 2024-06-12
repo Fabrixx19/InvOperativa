@@ -39,4 +39,12 @@ class ArticuloForm(forms.ModelForm):
         self.fields['modeloInventario'].empty_label = None
         self.fields['modeloInventario'].label_from_instance = lambda obj: obj.nombreMI
 
+class PrediccionDemandaForm(forms.ModelForm):
+    class Meta:
+        model = Prediccion_Demanda
+        fields = ['cantPeriodos', 'coeficienteSuavizacion', 'errorAceptable', 'mesPrimerPeriodo', 'anioPrimerPeriodo', 'metodoError']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['metodoError'].empty_label = None
+        self.fields['metodoError'].label_from_instance = lambda obj: obj.nombreME

@@ -48,16 +48,24 @@ class Venta(models.Model):
     articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='ventas')
     #Una venta Tiene solo una demanda, pero una demanda muchas venttas
     demanda = models.ForeignKey(Demanda, on_delete=models.CASCADE, related_name='ventas')
-    
+
+class MetodoError(models.Model):
+    codME = models.IntegerField(primary_key=True)
+    nombreME = models.CharField(null=False, blank=False, max_length=30)
+    fechaBajaME = models.DateField()    
     
 class Prediccion_Demanda(models.Model):
     codPD = models.IntegerField(primary_key=True)
-    cantPeriodos = models.IntegerField(null=False, blank=False)
-    errorAceptable = models.IntegerField(null=False, blank=False)
+    cantPeriodos = models.IntegerField(null=False, blank=False) #ingresa
+    coeficienteSuavizacion = models.FloatField(null=False, blank=False) #ingresa
+    errorAceptable = models.FloatField(null=False, blank=False) #ingresa
     fechaBajaDemanda = models.DateField()
     resultadoPrediccion = models.IntegerField(null=False, blank=False)
-    mesPrimerPeriodo = models.DateField()
+    mesPrimerPeriodo = models.IntegerField()    #ingresa
+    anioPrimerPeriodo = models.IntegerField()   #ingresa
     demandas = models.ManyToManyField(Demanda, related_name="predicciones")
+    metodoError = models.ForeignKey(MetodoError, on_delete=models.CASCADE, related_name='predicciones') #Ingresar
+    
 
 class EstadoOrdenCompra(models.Model):
     codEC = models.AutoField(primary_key=True)

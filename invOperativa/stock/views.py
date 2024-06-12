@@ -3,6 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import View, ListView
 from django.urls import reverse_lazy
+from metodos_demanda import *
 
 #Agregado por mi para ver si anda
 from .models import Venta
@@ -163,3 +164,67 @@ def ver_ventas_articulo(request, articulo_id):
     articulo = get_object_or_404(Articulo, pk=articulo_id)
     ventas = articulo.ventas.order_by('-fechaVenta')
     return render(request, 'ventas_articulo.html', {'articulo': articulo, 'ventas': ventas})
+
+class PredecirDemanda(CreateView):
+    model = Prediccion_Demanda
+    form_class = PrediccionDemandaForm
+    template_name = 'crear_demanda.html'
+    success_url = reverse_lazy('pendientes')
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        prediccion = self.object  # El artículo recién creado
+
+        # Crear demandas automáticas para los últimos tres años y el año actual
+        demanda_exponencial = self.metodo_exponen(prediccion)
+        demanda_ponderado = self.metodo_ponderado(prediccion)
+        
+        
+        
+        return response
+    
+    def metodo_exponen(self, prediccion):
+        mes = prediccion.mesPrimerPeriodo
+        anio = prediccion.anioPrimerPeriodo
+        if mes == 1:
+            mes = 13
+            anio -= 1
+        
+        cofSua = prediccion.coeficienteSuavizacion
+        demandaAnterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1)
+        demanda_real_anterior = demandaAnterior.demandaReal
+        demanda_predecida_anterior = demandaAnterior.demandaPredecida
+        if demanda_predecida_anterior == 0:
+            if mes == 2:
+                mes = 14
+                anio -= 1
+                
+            demanda_predecida_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-2).demandaReal
+        
+        demanda_predecida_exponencial = promedioExponencia(demanda_predecida_anterior, demanda_real_anterior, cofSua)
+        return demanda_predecida_exponencial    
+        
+    def metodo_ponderado(self, prediccion):
+        n = prediccion.cantPeriodos - 1
+        mes = prediccion.mesPrimerPeriodo
+        anio = prediccion.anioPrimerPeriodo
+        if mes == 1 :
+            mes = 13,
+            anio -= 1
+             
+        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1)
+        demandas = []
+        demandas.append(demanda.demandaReal)
+        
+        for i in range(1,n):
+            if mes <= i:
+                mes = 13
+                anio -= 1
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i)
+            demandas.append(prediccion_anterior.demandaReal)
+        
+        demanda_ponde = promedio_movil_ponderado(demandas)
+        return demanda_ponde
+        
+
+        
