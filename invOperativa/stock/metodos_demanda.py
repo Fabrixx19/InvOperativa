@@ -52,5 +52,23 @@ def error_cuadrado_medio(demandas_real, demandas_predecidas):
     return error_cm
 
 def error_porcentual():
-    
-    pass
+    #El calculo de error se hace con dos listas Dreal y Dpronosticada
+    # lista error = abs[Dreal - Dpronosticada]
+    mes = [1,2,3,4,5,6,7,8,9]
+    Dr = [180,168,159,175,190,205,180,182]
+    error = [5,7.5,15.8,1.8,16.6,30,2,3.8]
+    def valor_absoluto_lista(error):
+        return [abs(elemento) for elemento in error]
+
+    absError = valor_absoluto_lista(error)
+    print(f'El valor absoluto de la lista es: {absError}')
+
+    def sumatoria(lista1, lista2):
+        suma = 0
+        for elemento1, elemento2 in zip(lista1, lista2):
+            suma += (100 * elemento1 / elemento2)
+        return suma
+
+    sumatorai = sumatoria(absError, Dr)
+
+    MAPE = sumatorai/(mes[-1]-1)
