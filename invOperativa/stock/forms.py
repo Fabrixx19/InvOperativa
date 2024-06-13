@@ -43,6 +43,8 @@ class PrediccionDemandaForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
         fields = ['cantPeriodos', 'coeficienteSuavizacion', 'errorAceptable', 'mesPrimerPeriodo', 'anioPrimerPeriodo', 'metodoError']
+        
+    pesos = forms.CharField(widget=forms.Textarea, help_text="Ingrese los pesos separados por comas.")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

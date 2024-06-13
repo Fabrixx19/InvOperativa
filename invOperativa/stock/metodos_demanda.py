@@ -4,12 +4,13 @@ def promedioExponencia(demandaPredecidaAnterior, demandaRealAnterior, cofSua):
     Xp = ceil(demandaPredecidaAnterior + cofSua * (demandaRealAnterior - demandaPredecidaAnterior))
     return Xp
 
-def promedio_movil_ponderado(demanda):
-    suma=0
-    for d in demanda:
-        suma += d
-    demanda_predecida = ceil(suma/len(demanda))
-    print(demanda_predecida)
+def promedio_movil_ponderado(demanda, pesos):
+    suma = 0
+    for d, p in zip(demanda, pesos):
+        suma += d * p
+
+    demanda_predecida = ceil(suma)
+    return demanda_predecida
 
 def regresion_lineal():
     Dr=[74,79,80,90,105,142,122]

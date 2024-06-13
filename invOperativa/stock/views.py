@@ -173,11 +173,20 @@ class PredecirDemanda(CreateView):
     
     def form_valid(self, form):
         response = super().form_valid(form)
-        prediccion = self.object  # El artículo recién creado
+        prediccion = self.object  
+        
+        cant_periodos = form.cleaned_data['cantPeriodos']
+        
+        # Obtener pesos del formulario
+        pesos = list(map(float, self.request.POST['pesos'].split(',')))
+        
+        if len(pesos) != cant_periodos:
+            form.add_error('pesos', f"Debe ingresar exactamente {cant_periodos} pesos.")
+            return self.form_invalid(form)
 
-        # Crear demandas automáticas para los últimos tres años y el año actual
+        
         demanda_exponencial = self.metodo_exponen(prediccion)
-        demanda_ponderado = self.metodo_ponderado(prediccion)
+        demanda_ponderado = self.metodo_ponderado(prediccion, pesos)
         
         
         
@@ -204,7 +213,7 @@ class PredecirDemanda(CreateView):
         demanda_predecida_exponencial = promedioExponencia(demanda_predecida_anterior, demanda_real_anterior, cofSua)
         return demanda_predecida_exponencial    
         
-    def metodo_ponderado(self, prediccion):
+    def metodo_ponderado(self, prediccion, pesos):
         n = prediccion.cantPeriodos - 1
         mes = prediccion.mesPrimerPeriodo
         anio = prediccion.anioPrimerPeriodo
@@ -216,14 +225,14 @@ class PredecirDemanda(CreateView):
         demandas = []
         demandas.append(demanda.demandaReal)
         
-        for i in range(1,n):
+        for i in range(1,n+1):
             if mes <= i:
                 mes = 13
                 anio -= 1
             prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i)
             demandas.append(prediccion_anterior.demandaReal)
         
-        demanda_ponde = promedio_movil_ponderado(demandas)
+        demanda_ponde = promedio_movil_ponderado(demandas, pesos)
         return demanda_ponde
         
 

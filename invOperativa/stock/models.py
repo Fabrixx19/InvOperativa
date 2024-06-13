@@ -59,7 +59,6 @@ class Prediccion_Demanda(models.Model):
     cantPeriodos = models.IntegerField(null=False, blank=False) #ingresa
     coeficienteSuavizacion = models.FloatField(null=False, blank=False) #ingresa
     errorAceptable = models.FloatField(null=False, blank=False) #ingresa
-    fechaBajaDemanda = models.DateField()
     resultadoPrediccion = models.IntegerField(null=False, blank=False)
     mesPrimerPeriodo = models.IntegerField()    #ingresa
     anioPrimerPeriodo = models.IntegerField()   #ingresa
