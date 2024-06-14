@@ -1,4 +1,5 @@
 from math import ceil
+import statistics
 
 def promedioExponencia(demandaPredecidaAnterior, demandaRealAnterior, cofSua):
     Xp = ceil(demandaPredecidaAnterior + cofSua * (demandaRealAnterior - demandaPredecidaAnterior))
@@ -12,38 +13,46 @@ def promedio_movil_ponderado(demanda, pesos):
     demanda_predecida = ceil(suma)
     return demanda_predecida
 
-def regresion_lineal():
-    Dr=[74,79,80,90,105,142,122]
-    mes=[1,2,3,4,5,6,7]
+def regresion_lineal(demandas, cantp):
     
-    AxD = []
-    for i in range(len(Dr)):
-        AxD.append(Dr[i] * mes[i])
-    print(AxD)
+    periodos = []
     
-    #Funcion para calcular promedios
-    def calcular_promedio(lista):
-        if len(lista) == 0:
-            return 0.0
-        return sum(lista) / len(lista)
+    for n in range(1,cantp+1):
+        periodos.append(int(n))
     
-    def suma_de_cuadrados(lista):
-        return sum(elemento ** 2 for elemento in lista)
+    pd = statistics.mean(demandas) #Promedio Demanda
+    px = statistics.mean(periodos)
     
-    PD = calcular_promedio(Dr) #Promedio Demanda
-    PM = calcular_promedio(mes) #Promedio mes
-    sumaCuadradosAnio = suma_de_cuadrados(mes)
-    print(f"El promedio general demanda real es: {PD:.2f}")
-    print(f"El promedio general años es: {PM:.2f}")
+    sumxy = 0
+    for i in range(len(demandas)):
+        sumxy += demandas[i] * periodos[i]
     
-    b = ((sum(AxD)- mes[-1]*PD*PM)/(sumaCuadradosAnio-mes[-1]*(PM**2)))
-    print(f'b={b}')
+    sumx2 = 0
+    for i in periodos:
+        sumx2 += i**2
     
-    a = (PD-b*PM)
-    print(f'a={a}')
+    b = (sumxy-cantp*pd*px)/(sumx2-cantp*px**2)
     
-    pronostico2008 = b*(mes[-1]+1)+a
-    print(f'Pronostico2008={pronostico2008}')
+    a = pd-b*px
+    
+    demandapredecida=ceil(b*(cantp+1)+a)
+    return demandapredecida
+   
+def estacionalidad(demandasActual, demandasPasado1, demandasPasado2, demandaRegresion):
+    n = len(demandasActual)
+    
+    promedioMes = (demandasActual[0]+demandasPasado1[0]+demandasPasado2[0])/3
+    print(promedioMes)
+    
+    promedios = []
+    for i in range(n):
+        promedios.append((demandasActual[i]+demandasPasado1[i]+demandasPasado2[i])/3) 
+        
+    indiceE = promedioMes/statistics.mean(promedios)
+    print(indiceE)
+    
+    demandaEstacionalidad = ceil(demandaRegresion*indiceE)
+    return demandaEstacionalidad       
     
 def error_cuadrado_medio(demandas_real, demandas_predecidas):
     sumatoria = 0
@@ -52,24 +61,11 @@ def error_cuadrado_medio(demandas_real, demandas_predecidas):
     error_cm = sumatoria/len(demandas_real)
     return error_cm
 
-def error_porcentual():
-    #El calculo de error se hace con dos listas Dreal y Dpronosticada
-    # lista error = abs[Dreal - Dpronosticada]
-    mes = [1,2,3,4,5,6,7,8,9]
-    Dr = [180,168,159,175,190,205,180,182]
-    error = [5,7.5,15.8,1.8,16.6,30,2,3.8]
-    def valor_absoluto_lista(error):
-        return [abs(elemento) for elemento in error]
+def error_porcentual(demandas_real, demandas_predecidas):
+    sumatoria = 0
+    for i in range(len(demandas_real)):
+        sumatoria = (demandas_predecidas[i]-demandas_real[i])*100/demandas_real[i]
+    error_porcentual = sumatoria/len(demandas_real)
+    return error_porcentual
+    
 
-    absError = valor_absoluto_lista(error)
-    print(f'El valor absoluto de la lista es: {absError}')
-
-    def sumatoria(lista1, lista2):
-        suma = 0
-        for elemento1, elemento2 in zip(lista1, lista2):
-            suma += (100 * elemento1 / elemento2)
-        return suma
-
-    sumatorai = sumatoria(absError, Dr)
-
-    MAPE = sumatorai/(mes[-1]-1)
