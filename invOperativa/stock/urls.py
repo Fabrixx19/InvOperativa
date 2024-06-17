@@ -13,5 +13,6 @@ urlpatterns = [
     path('articulos/', ListaArticulos.as_view(), name='lista_articulos'),
     path('articulos/<int:articulo_id>/demandas/', views.ver_demandas_articulo, name='demandas_articulo'),
     path('articulos/<int:articulo_id>/ventas/', views.ver_ventas_articulo, name='ventas_articulo'),
+
 ]
 
