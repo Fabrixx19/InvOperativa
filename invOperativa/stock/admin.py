@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Articulo, Venta, OrdenDeCompra, EstadoArticulo, EstadoOrdenCompra, ModeloInventario, Proveedor, Prediccion_Demanda, Demanda, ArticuloProveedor
+from .models import Articulo, Venta, OrdenDeCompra, EstadoArticulo, EstadoOrdenCompra, ModeloInventario, Proveedor, Prediccion_Demanda, Demanda, ArticuloProveedor, MetodoError
 # Register your models here.
 
 admin.site.register(Articulo)
@@ -12,3 +12,4 @@ admin.site.register(EstadoOrdenCompra)
 admin.site.register(EstadoArticulo)
 admin.site.register(ArticuloProveedor)
 admin.site.register(ModeloInventario)
+admin.site.register(MetodoError)

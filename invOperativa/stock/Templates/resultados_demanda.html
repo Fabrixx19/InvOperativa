@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultados de la Predicción de Demanda</title>
+</head>
+<body>
+    <h1>Resultados de la Predicción de Demanda</h1>
+    
+    <h2>Periodo predecido</h2>
+    <p><strong>Mes:</strong> {{ mes_primer_periodo }}</p>
+    <p><strong>Año:</strong> {{ anio_primer_periodo }}</p>
+    
+    <h2>Demanda Predicha</h2>
+    <ul>
+        <li><strong>Suavización Exponencial:</strong> {{ demanda_exponencial }} (Error: {{ error_exp }})</li>
+        <li><strong>Promedio Móvil Ponderado:</strong> {{ demanda_ponderado }} (Error: {{ error_ponderado }})</li>
+        <li><strong>Regresión Lineal:</strong> {{ demanda_regresion }} (Error: {{ error_regresion }})</li>
+        <li><strong>Estacional:</strong> {{ demanda_estacional }} (Error: {{ error_estacional }})</li>
+    </ul>
+
+    <h2>Prediccion Aceptada</h2>
+    <p><strong>Error Aceptable</strong> {{ error_aceptable }}</p>
+    {% if error_cercano_metodo %}
+        <p><strong>Método:</strong> {{ error_cercano_metodo }}</p>
+        <p><strong>Error Cercano:</strong> {{ error_cercano_valor }}</p>
+    {% else %}
+        <p>No hay errores mayores o iguales al error aceptable.</p>
+    {% endif %}
+    
+</body>
+</html>
