@@ -27,7 +27,8 @@ class Proveedor(models.Model):
     fechaBajaProveedor = models.DateField(null=True, blank=True)
     nombreProveedor = models.CharField(null=False, blank=False, max_length=30)
     tiempoDeDemora = models.DateField(null=False, blank=False)
-    precioXunidad = models.FloatField()
+    precioXunidad = models.FloatField(null=False, blank=False)
+    costo_pedido = models.FloatField(null=False, blank=False)
     articulo = models.OneToOneField(Articulo, on_delete=models.CASCADE)
 
 
