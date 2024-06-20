@@ -1,3 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Venta</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card shadow">
+            <div class="card-body">
+                <h1 class="card-title mb-4 text-center text-warning">Crear Venta</h1>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="mb-3">
+                        <label for="id_articulo" class="form-label">Stock Disponible:</label>
+                        <span id="stock-disponible" class="fw-bold">Selecciona un artículo</span>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-danger mt-4">
+            <ul class="mb-0">
+                {% for field, errors in form.errors.items %}
+                <li>{{ field }}: {{ errors }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#id_articulo').change(function() {
+                var articuloId = $(this).val();
+                if (articuloId) {
+                    $.ajax({
+                        url: '{% url "obtener_stock" %}',
+                        data: {
+                            'articulo_id': articuloId
+                        },
+                        success: function(data) {
+                            $('#stock-disponible').text(data.stock);
+                        },
+                        error: function(xhr, status, error) {
+                            $('#stock-disponible').text('Error al obtener el stock');
+                        }
+                    });
+                } else {
+                    $('#stock-disponible').text('Selecciona un artículo');
+                }
+            });
+        });
+    </script>
+
+    <!-- Scripts de Bootstrap (opcional, si no los tienes cargados de otra forma) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-iZc5avFbtpjQTZs1xWMP2IeO6/UHEf7rj3ZwD7SceEY9zWw81cvq5Z65b8oRYG6S" crossorigin="anonymous"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+<!--
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -51,3 +128,4 @@
     </script>
 </body>
 </html>
+-->
