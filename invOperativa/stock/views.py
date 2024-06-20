@@ -420,14 +420,6 @@ class ResultadosDemanda(TemplateView):
         return context
         
 
-
-
-
-
-
-
-
-
 def promedioExponencia(demandaPredecidaAnterior, demandaRealAnterior, cofSua):
     Xp = ceil(demandaPredecidaAnterior + cofSua * (demandaRealAnterior - demandaPredecidaAnterior))
     return Xp
@@ -463,7 +455,7 @@ def regresion_lineal(demandas, cantp):
     
     demandapredecida=ceil(b*(cantp+1)+a)
     return demandapredecida
-   
+
 def estacionalidad(demandasActual, demandasPasado1, demandasPasado2, demandaRegresion):
     n = len(demandasActual)
     

@@ -16,6 +16,9 @@ class Articulo(models.Model):
     fechaBajaArticulo = models.DateField(null=True, blank=True, max_length=30)
     nombreArticulo = models.CharField(max_length=30)
     stockArticulo = models.IntegerField()
+    puntoPedido = models.IntegerField()
+    stockSeguridad = models.IntegerField()
+    loteOptimo = models.IntegerField()
     estado = models.ForeignKey(EstadoArticulo, on_delete=models.CASCADE, related_name='articulos')
     modeloInventario = models.ForeignKey(ModeloInventario, on_delete=models.CASCADE, related_name="articulos")
 
@@ -24,14 +27,10 @@ class Proveedor(models.Model):
     fechaBajaProveedor = models.DateField(null=True, blank=True)
     nombreProveedor = models.CharField(null=False, blank=False, max_length=30)
     tiempoDeDemora = models.DateField(null=False, blank=False)
+    precioXunidad = models.FloatField(null=False, blank=False)
+    costo_pedido = models.FloatField(null=False, blank=False)
+    articulo = models.OneToOneField(Articulo, on_delete=models.CASCADE)
 
-class ArticuloProveedor(models.Model):
-    codAP = models.AutoField(primary_key=True)
-    puntoPedido = models.IntegerField()
-    stockSeguridad = models.IntegerField()
-    loteOptimo = models.IntegerField()
-    articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='articuloProveedor')
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, related_name='articuloProveedor')
 
 class Demanda(models.Model):
     codDemanda = models.IntegerField(primary_key=True)
