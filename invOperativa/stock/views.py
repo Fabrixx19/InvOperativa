@@ -425,23 +425,23 @@ class AsignarProveedorView(UpdateView):
     form_class = AsignarProveedorForm
     template_name = 'asignar_proveedor.html'
     context_object_name = 'articulo'
-    
+
     def form_valid(self, form):
         articulo = form.save(commit=False)
         proveedor = articulo.proveedor
         
-        #verificar modelo de inventario
+        # verificar modelo de inventario
         modelo = articulo.modeloInventario.nombreMI
         codArt = articulo.codArticulo
-        
+
         if modelo == "Lote Fijo":
             loteO = self.calcularLO(codArt, proveedor)
             puntoP = self.calcularPP(codArt, proveedor)
             stockS = self.calcularSSLote(proveedor)
-            
+
             articulo.loteOptimo = loteO
             articulo.puntoPedido = puntoP
-            articulo.stockSeguridad= stockS
+            articulo.stockSeguridad = stockS
         else:
             print("otro modelo inventario")
         
@@ -449,36 +449,33 @@ class AsignarProveedorView(UpdateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('articulo_detalle', kwargs={'pk': self.object.pk})
-    
-    def calcularLO(cod_articulo, cod_proveedor):
-        proveedor = get_object_or_404(Proveedor, codProveedor=cod_proveedor)
-        anio=datetime.now().year
-        mes=datetime.now().month - 1
-        
+        return reverse_lazy('lista_articulos')
+
+    def calcularLO(self, cod_articulo, proveedor):
+        anio = datetime.now().year
+        mes = datetime.now().month - 1
+
         cp = proveedor.costo_pedido
-        demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, medDemanda=mes)
+        demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, mesDemanda=mes)
+        d = demanda.demandaReal
         
-        loteO=EOQ(demanda,cp)
+        loteO = EOQ(d, cp)
         
         return loteO
-    
-    def calcularPP(cod_articulo, cod_proveedor):
-        proveedor = get_object_or_404(Proveedor, codProveedor=cod_proveedor)
-        anio=datetime.now().year
-        mes=datetime.now().month - 1
-        
+
+    def calcularPP(self, cod_articulo, proveedor):
+        anio = datetime.now().year
+        mes = datetime.now().month - 1
+
         l = proveedor.diasDeDemora
-        demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, medDemanda=mes)
-        demandad = demanda/30
+        demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, mesDemanda=mes)
+        demandad = demanda.demandaReal / 30  # Esto supone que demanda es un valor total mensual
         
         puntoPedido = PP(demandad, l)
         
         return puntoPedido
-    
-    def calcularSSLote(cod_proveedor):
-        proveedor = get_object_or_404(Proveedor, codProveedor=cod_proveedor)
-        
+
+    def calcularSSLote(self, proveedor):
         l = proveedor.diasDeDemora
         
         stockS = SSLF(l)
