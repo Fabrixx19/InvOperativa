@@ -8,6 +8,21 @@ diasDeTrabajoPorAnio = 300
 dd = 10000/diasDeTrabajoPorAnio  #Demanda diaria    d = 10000 ejemplo
 l = 5   #Tiempo de demora del proveedor
 k = 2000    #Tasa de produccion
+z = 1.64
+
+
+
+## SS lote fijo
+def SSLF (l, z):
+    ss = z*math.sqrt(l)
+    return ss
+
+
+## SS intervalo fijo
+def SSIF (dd,cp,ca,k,l,z):
+    t =  math.sqrt((2/dd)*(cp/ca)*(1/(1-(dd/k))))
+    ss = z*math.sqrt(t+l)
+    return ss
 
 #Punto de Pedido
 def PP(dd,l):
@@ -16,7 +31,7 @@ def PP(dd,l):
 
 pp = math.ceil(PP(dd,l))
 
-#Sistema de Tamaño de lote fijo - EOQ
+#Sistema de Tamaño de lote fijo - EOQ - Lote optimo
 def EOQ(d, cp, ca):
     q = math.sqrt(2*d*(cp/ca))
     return math.ceil(q)
@@ -44,8 +59,14 @@ def CGI(d,q,ca,cp):
     cgi = cc + ca + cp
     return cgi
 
-a = CGI(d, q, ca, cp)
+q2 = CGI(d, q, ca, cp)
+q1= EOQ(d, cp, ca)
+ss1 = SSLF(l, z)
+ss2 = SSIF(dd,cp,ca,k,l,z)
 
-print(f'GGI = {a}')
-print(f'EOQ = {EOQ(d, cp, ca)}')
+
+print(f'GGI = {q2}')
+print(f'EOQ = {q1}')
 print(f'Punto de Pedido: {pp}')
+print(f'SSLF = {ss1}')
+print(f'SSIF = {ss2}')
