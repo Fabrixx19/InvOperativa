@@ -5,7 +5,7 @@ from django.views.generic import View, ListView
 from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
 
-from math import ceil
+from math import ceil, sqrt
 import statistics
 
 #Agregado por mi para ver si anda
@@ -418,6 +418,39 @@ class ResultadosDemanda(TemplateView):
             demanda.save()
             
         return context
+
+
+class AsignarProveedorView(UpdateView):
+    model = Articulo
+    form_class = AsignarProveedorForm
+    template_name = 'asignar_proveedor.html'
+    context_object_name = 'articulo'
+    
+    def form_valid(self, form):
+        articulo = form.save(commit=False)
+        proveedor = articulo.proveedor
+        
+        #verificar modelo de inventario
+        modelo = articulo.modeloInventario.nombreMI
+        
+        codArt = articulo.codArticulo
+        codProv = proveedor.codProveedor
+        
+        if modelo == "Lote Fijo":
+            loteOptimo = self.calcularLO(codArt, codProv)
+        
+        articulo.save()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('articulo_detalle', kwargs={'pk': self.object.pk})
+    
+    def calcularLO(cod_articulo, cod_proveedor):
+        articulo = get_object_or_404(Articulo, codArticulo=cod_articulo)
+        proveedor = get_object_or_404(Proveedor, codProveedor=cod_proveedor)
+        
+        cp = proveedor.costo_pedido
+        demanda = get_object_or_404(Demanda, )
         
 
 def promedioExponencia(demandaPredecidaAnterior, demandaRealAnterior, cofSua):
@@ -484,3 +517,8 @@ def error_porcentual(demandas_real, demandas_predecidas):
         sumatoria = (demandas_predecidas[i]-demandas_real[i])*100/demandas_real[i]
     error_porcentual = sumatoria/len(demandas_real)
     return error_porcentual
+
+def EOQ(d, cp):
+    ca = 1
+    q = sqrt(2*d*(cp/ca))
+    return ceil(q)

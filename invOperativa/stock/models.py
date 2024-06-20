@@ -8,7 +8,14 @@ class EstadoArticulo(models.Model):
 class ModeloInventario(models.Model):
     codMI = models.AutoField(primary_key=True)
     nombreMI = models.CharField(max_length=30,null=False)
-    
+
+class Proveedor(models.Model):
+    codProveedor = models.AutoField(primary_key=True)
+    fechaBajaProveedor = models.DateField(null=True, blank=True)
+    nombreProveedor = models.CharField(null=False, blank=False, max_length=30)
+    diasDeDemora = models.IntegerField(null=False, blank=False)
+    precioXunidad = models.FloatField(null=False, blank=False)
+    costo_pedido = models.FloatField(null=False, blank=False)   
 
 class Articulo(models.Model):
     codArticulo = models.AutoField(primary_key=True)
@@ -21,16 +28,7 @@ class Articulo(models.Model):
     loteOptimo = models.IntegerField()
     estado = models.ForeignKey(EstadoArticulo, on_delete=models.CASCADE, related_name='articulos')
     modeloInventario = models.ForeignKey(ModeloInventario, on_delete=models.CASCADE, related_name="articulos")
-
-class Proveedor(models.Model):
-    codProveedor = models.AutoField(primary_key=True)
-    fechaBajaProveedor = models.DateField(null=True, blank=True)
-    nombreProveedor = models.CharField(null=False, blank=False, max_length=30)
-    tiempoDeDemora = models.DateField(null=False, blank=False)
-    precioXunidad = models.FloatField(null=False, blank=False)
-    costo_pedido = models.FloatField(null=False, blank=False)
-    articulo = models.OneToOneField(Articulo, on_delete=models.CASCADE)
-
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, related_name='articulos', default=None)
 
 class Demanda(models.Model):
     codDemanda = models.IntegerField(primary_key=True)

@@ -50,3 +50,13 @@ class PrediccionDemandaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['metodoError'].empty_label = None
         self.fields['metodoError'].label_from_instance = lambda obj: obj.nombreME
+
+class AsignarProveedorForm(forms.ModelForm):
+    class Meta:
+        model = Articulo
+        fields = ['proveedor']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['proveedor'].empty_label = None
+        self.fields['proveedor'].label_from_instance = lambda obj: obj.nombreProveedor
