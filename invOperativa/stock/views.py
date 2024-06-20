@@ -432,12 +432,18 @@ class AsignarProveedorView(UpdateView):
         
         #verificar modelo de inventario
         modelo = articulo.modeloInventario.nombreMI
-        
         codArt = articulo.codArticulo
-        codProv = proveedor.codProveedor
         
         if modelo == "Lote Fijo":
-            loteOptimo = self.calcularLO(codArt, codProv)
+            loteO = self.calcularLO(codArt, proveedor)
+            puntoP = self.calcularPP(codArt, proveedor)
+            stockS = self.calcularSSLote(proveedor)
+            
+            articulo.loteOptimo = loteO
+            articulo.puntoPedido = puntoP
+            articulo.stockSeguridad= stockS
+        else:
+            print("otro modelo inventario")
         
         articulo.save()
         return super().form_valid(form)
@@ -446,11 +452,41 @@ class AsignarProveedorView(UpdateView):
         return reverse_lazy('articulo_detalle', kwargs={'pk': self.object.pk})
     
     def calcularLO(cod_articulo, cod_proveedor):
-        articulo = get_object_or_404(Articulo, codArticulo=cod_articulo)
         proveedor = get_object_or_404(Proveedor, codProveedor=cod_proveedor)
+        anio=datetime.now().year
+        mes=datetime.now().month - 1
         
         cp = proveedor.costo_pedido
-        demanda = get_object_or_404(Demanda, )
+        demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, medDemanda=mes)
+        
+        loteO=EOQ(demanda,cp)
+        
+        return loteO
+    
+    def calcularPP(cod_articulo, cod_proveedor):
+        proveedor = get_object_or_404(Proveedor, codProveedor=cod_proveedor)
+        anio=datetime.now().year
+        mes=datetime.now().month - 1
+        
+        l = proveedor.diasDeDemora
+        demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, medDemanda=mes)
+        demandad = demanda/30
+        
+        puntoPedido = PP(demandad, l)
+        
+        return puntoPedido
+    
+    def calcularSSLote(cod_proveedor):
+        proveedor = get_object_or_404(Proveedor, codProveedor=cod_proveedor)
+        
+        l = proveedor.diasDeDemora
+        
+        stockS = SSLF(l)
+        
+        return stockS
+        
+        
+
         
 
 def promedioExponencia(demandaPredecidaAnterior, demandaRealAnterior, cofSua):
@@ -522,3 +558,13 @@ def EOQ(d, cp):
     ca = 1
     q = sqrt(2*d*(cp/ca))
     return ceil(q)
+
+def PP(dd,l):
+    pp = dd * l
+    return pp
+
+## SS lote fijo
+def SSLF (l):
+    z = 1.64
+    ss = z*sqrt(l)
+    return ss

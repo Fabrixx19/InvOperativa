@@ -23,12 +23,12 @@ class Articulo(models.Model):
     fechaBajaArticulo = models.DateField(null=True, blank=True, max_length=30)
     nombreArticulo = models.CharField(max_length=30)
     stockArticulo = models.IntegerField()
-    puntoPedido = models.IntegerField()
-    stockSeguridad = models.IntegerField()
-    loteOptimo = models.IntegerField()
+    puntoPedido = models.IntegerField(null=True)
+    stockSeguridad = models.IntegerField(null=True)
+    loteOptimo = models.IntegerField(null=True)
     estado = models.ForeignKey(EstadoArticulo, on_delete=models.CASCADE, related_name='articulos')
     modeloInventario = models.ForeignKey(ModeloInventario, on_delete=models.CASCADE, related_name="articulos")
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, related_name='articulos', default=None)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, related_name='articulos', null=True)
 
 class Demanda(models.Model):
     codDemanda = models.IntegerField(primary_key=True)

@@ -13,7 +13,8 @@ z = 1.64
 
 
 ## SS lote fijo
-def SSLF (l, z):
+def SSLF (l):
+    z = 1.64
     ss = z*math.sqrt(l)
     return ss
 

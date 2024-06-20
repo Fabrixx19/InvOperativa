@@ -15,5 +15,6 @@ urlpatterns = [
     path('articulos/<int:articulo_id>/ventas/', views.ver_ventas_articulo, name='ventas_articulo'),
     path('predecir/', PredecirDemanda.as_view(), name='predecir_demanda'),
     path('resultados/', ResultadosDemanda.as_view(), name='resultados_demanda'),
+    path('articulo/<int:pk>/asignar_proveedor/', AsignarProveedorView.as_view(), name='asignar_proveedor'),
 ]
 
