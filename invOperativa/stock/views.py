@@ -4,6 +4,8 @@ from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import View, ListView
 from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
+import math
+
 
 from math import ceil, sqrt
 import statistics
@@ -443,7 +445,13 @@ class AsignarProveedorView(UpdateView):
             articulo.puntoPedido = puntoP
             articulo.stockSeguridad = stockS
         else:
-            print("otro modelo inventario")
+            loteO = self.calcularIO(codArt, proveedor)
+            puntoP = self.calcularPP(codArt, proveedor)
+            stockS = self.calcularSSLote(proveedor)
+
+            articulo.loteOptimo = loteO
+            articulo.puntoPedido = puntoP
+            articulo.stockSeguridad = stockS
         
         articulo.save()
         return super().form_valid(form)
@@ -451,6 +459,7 @@ class AsignarProveedorView(UpdateView):
     def get_success_url(self):
         return reverse_lazy('lista_articulos')
 
+# Lote Fijo
     def calcularLO(self, cod_articulo, proveedor):
         anio = datetime.now().year
         mes = datetime.now().month - 1
@@ -483,9 +492,35 @@ class AsignarProveedorView(UpdateView):
         return stockS
         
         
+# Lote Fijo - MPR
+    def calcularIO(self, cod_articulo, proveedor):
+        anio = datetime.now().year
+        mes = datetime.now().month - 1
 
+        cp = proveedor.costo_pedido
+        demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, mesDemanda=mes)
+        d = demanda.demandaReal
+        ca = 10
+        k = 100
+
+        loteO = MPR(d,cp,ca,k)
+        return loteO
         
+    def calcularSSInventario(self, proveedor, cod_articulo):
+        anio = datetime.now().year
+        mes = datetime.now().month - 1
 
+        l = proveedor.diasDeDemora
+        cp = proveedor.costo_pedido
+        demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, mesDemanda=mes)
+        dd = demanda.demandaReal / 30  # Esto supone que demanda es un valor total mensual
+        ca = 10
+        z = 1.64
+        k = 100
+        stockS = SSIF (dd,cp,ca,k,l,z)
+        
+        return stockS
+        
 def promedioExponencia(demandaPredecidaAnterior, demandaRealAnterior, cofSua):
     Xp = ceil(demandaPredecidaAnterior + cofSua * (demandaRealAnterior - demandaPredecidaAnterior))
     return Xp
@@ -560,8 +595,19 @@ def PP(dd,l):
     pp = dd * l
     return pp
 
+
+#Sistema de Tamaño Fijo de Lote - MPR
+def MPR(d,cp,ca,k):
+    q = math.sqrt(2*d*(cp/ca)*(1/(1-(d/k))))
+    return math.ceil(q)
+
 ## SS lote fijo
 def SSLF (l):
     z = 1.64
     ss = z*sqrt(l)
+    return ss
+## SS intervalo fijo
+def SSIF (dd,cp,ca,k,l,z):
+    t =  math.sqrt((2/dd)*(cp/ca)*(1/(1-(dd/k))))
+    ss = z*math.sqrt(t+l)
     return ss
