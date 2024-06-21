@@ -1,4 +1,97 @@
 <!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados de la Predicción de Demanda</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background-color: #121212; /* Fondo oscuro */
+            color: #ffffff; /* Texto claro */
+        }
+        .container {
+            margin-top: 50px; /* Margen superior */
+        }
+        .card {
+            background-color: #1e1e1e; /* Fondo de la tarjeta */
+            color: #ffffff; /* Color del texto */
+            border-radius: 8px; /* Bordes redondeados */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); /* Sombra */
+            padding: 20px; /* Espaciado interno */
+        }
+        .card-header {
+            background-color: rgba(221, 182, 9, 0.795); /* Fondo del encabezado */
+        }
+        .card-title {
+            margin-bottom: 20px; /* Margen inferior del título */
+        }
+        ul {
+            list-style: none; /* Sin viñetas */
+            padding: 0; /* Sin relleno */
+        }
+        ul li {
+            margin-bottom: 10px; /* Margen inferior de los elementos de la lista */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center text-warning mb-4">Resultados de la Predicción de Demanda</h1>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Periodo predecido</h2>
+            </div>
+            <div class="card-body">
+                <p><strong>Mes:</strong> {{ mes_primer_periodo }}</p>
+                <p><strong>Año:</strong> {{ anio_primer_periodo }}</p>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2 class="card-title">Demanda Predicha</h2>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li><strong>Suavización Exponencial:</strong> {{ demanda_exponencial }} (Error: {{ error_exp }})</li>
+                    <li><strong>Promedio Móvil Ponderado:</strong> {{ demanda_ponderado }} (Error: {{ error_ponderado }})</li>
+                    <li><strong>Regresión Lineal:</strong> {{ demanda_regresion }} (Error: {{ error_regresion }})</li>
+                    <li><strong>Estacional:</strong> {{ demanda_estacional }} (Error: {{ error_estacional }})</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2 class="card-title">Predicción Aceptada</h2>
+            </div>
+            <div class="card-body">
+                <p><strong>Error Aceptable:</strong> {{ error_aceptable }}</p>
+                {% if error_cercano_metodo %}
+                    <p><strong>Método:</strong> {{ error_cercano_metodo }}</p>
+                    <p><strong>Error Cercano:</strong> {{ error_cercano_valor }}</p>
+                {% else %}
+                    <p>No hay errores mayores o iguales al error aceptable.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de Bootstrap (opcional, si no los tienes cargados de otra forma) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-iZc5avFbtpjQTZs1xWMP2IeO6/UHEf7rj3ZwD7SceEY9zWw81cvq5Z65b8oRYG6S" crossorigin="anonymous"></script>
+</body>
+</html>
+
+
+
+
+
+
+<!--
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -30,3 +123,5 @@
     
 </body>
 </html>
+
+-->
