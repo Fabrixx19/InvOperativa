@@ -3,7 +3,7 @@ from . import views
 from .views import *
 
 urlpatterns = [
-    path('', views.lista_pendientes, name = 'pendientes'),
+    path('', views.inicio, name = 'inicio'),
     path('ventas/', ventas_por_mes, name = 'ventas'),
     path('crear-venta/', CrearVenta.as_view(), name='crear_venta'),
     path('articulos/crear/', CrearArticulo.as_view(), name='crear_articulo'),
@@ -16,5 +16,6 @@ urlpatterns = [
     path('predecir/', PredecirDemanda.as_view(), name='predecir_demanda'),
     path('resultados/', ResultadosDemanda.as_view(), name='resultados_demanda'),
     path('articulo/<int:pk>/asignar_proveedor/', AsignarProveedorView.as_view(), name='asignar_proveedor'),
+
 ]
 

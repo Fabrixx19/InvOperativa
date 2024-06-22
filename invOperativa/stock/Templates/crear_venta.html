@@ -6,14 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Venta</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .btn-custom {
+            display: inline-block;
+            width: 200px; /* Botones grandes */
+            height: 60px; /* Botones grandes */
+            margin: 10px;
+            background-color: #ffb703; /* Color oro */
+            color: black;
+            text-align: center;
+            line-height: 60px; /* Para centrar el texto verticalmente */
+            text-decoration: none; /* Sin subrayado */
+            border-radius: 0; /* Botones cuadrados */
+            font-size: 1.2rem; /* Tamaño de texto grande */
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
         <div class="card shadow">
             <div class="card-body">
                 <h1 class="card-title mb-4 text-center text-warning">Crear Venta</h1>
+                <a href="{% url 'inicio' %}" class="btn btn-warning mb-3"><i class="bi bi-arrow-left-square-fill"></i> Volver al Inicio</a>
                 <form method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
@@ -21,8 +38,8 @@
                         <label for="id_articulo" class="form-label">Stock Disponible:</label>
                         <span id="stock-disponible" class="fw-bold">Selecciona un artículo</span>
                     </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">Guardar</button>
+                    <div class="d-grid gap-2" style="justify-content: center">
+                        <a type="submit" href="{% url 'crear_venta' %}" class="btn-custom">Crear Venta</a>
                     </div>
                 </form>
             </div>

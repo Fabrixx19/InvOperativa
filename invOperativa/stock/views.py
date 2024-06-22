@@ -18,7 +18,7 @@ from datetime import datetime
 
 # Create your views here.
 
-def lista_pendientes(request):
+def inicio(request):
     #return HttpResponse('Hola ando')
     return render(request, "inicio.html")
 

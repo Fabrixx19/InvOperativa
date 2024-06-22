@@ -39,9 +39,8 @@
 <body>
     <div class="container">
         <h1 class="display-5 text-center text-warning mb-4">Ventas del Artículo {{ articulo.nombreArticulo }}</h1>
-        <a href="{% url 'lista_articulos' %}" class="btn btn-secondary btn-back">
-            <i class="bi bi-arrow-left-circle"></i> Volver a la lista de artículos
-        </a>
+        <a href="{% url 'lista_articulos' %}" class="btn btn-warning mb-3"><i class="bi bi-arrow-left-square-fill"></i> Volver a la lista de artículos</a>
+
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">Historial de Ventas</h2>
