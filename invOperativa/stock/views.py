@@ -22,6 +22,10 @@ def inicio(request):
     #return HttpResponse('Hola ando')
     return render(request, "inicio.html")
 
+def elegirMPrediccion(request):
+    #return HttpResponse('Hola ando')
+    return render(request, "elegir_metodo_prediccion.html")
+
 # Esta vista es para procesar la solicitud del ususario
 def ventas_por_mes(request):
     form = DatosPrediccionFrom(request.GET or None)

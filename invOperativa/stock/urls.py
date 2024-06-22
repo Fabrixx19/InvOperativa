@@ -16,6 +16,8 @@ urlpatterns = [
     path('predecir/', PredecirDemanda.as_view(), name='predecir_demanda'),
     path('resultados/', ResultadosDemanda.as_view(), name='resultados_demanda'),
     path('articulo/<int:pk>/asignar_proveedor/', AsignarProveedorView.as_view(), name='asignar_proveedor'),
+    path('elegirMPrediccion', views.elegirMPrediccion, name = 'elegirMPrediccion'),
+    
 
 ]
 
