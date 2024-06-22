@@ -18,9 +18,9 @@ from datetime import datetime
 
 # Create your views here.
 
-def lista_pendientes(pedido):
-    return HttpResponse('Hola ando')
-
+def lista_pendientes(request):
+    #return HttpResponse('Hola ando')
+    return render(request, "inicio.html")
 
 # Esta vista es para procesar la solicitud del ususario
 def ventas_por_mes(request):

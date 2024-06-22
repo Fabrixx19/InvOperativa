@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Botones Centrados</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #121212; /* Fondo oscuro */
+            color: white;
+            margin: 0; /* Quitar márgenes del body */
+            padding-top: 20px; /* Separación desde la parte superior */
+        }
+        h1 {
+            margin-top: 0; /* Sin margen superior */
+        }
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+        .btn-custom {
+            display: inline-block;
+            width: 200px; /* Botones grandes */
+            height: 60px; /* Botones grandes */
+            margin: 10px;
+            background-color: #ffb703; /* Color oro */
+            color: black;
+            text-align: center;
+            line-height: 60px; /* Para centrar el texto verticalmente */
+            text-decoration: none; /* Sin subrayado */
+            border-radius: 0; /* Botones cuadrados */
+            font-size: 1.2rem; /* Tamaño de texto grande */
+        }
+        .btn-custom:hover {
+            background-color: #ffa500; /* Color oro al pasar el cursor */
+        }
+    </style>
+</head>
+<body>
+    <h1>Mi Encabezado</h1>
+    <div class="links-container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-4">
+                <a href="#" class="btn-custom">Enlace 1</a>
+                <a href="#" class="btn-custom">Enlace 2</a>
+                <a href="#" class="btn-custom">Enlace 3</a>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-4">
+                <a href="#" class="btn-custom">Enlace 4</a>
+                <a href="#" class="btn-custom">Enlace 5</a>
+                <a href="#" class="btn-custom">Enlace 6</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
