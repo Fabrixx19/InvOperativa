@@ -56,7 +56,7 @@ class CrearVenta(CreateView):
     model = Venta
     form_class = VentaForm
     template_name = 'crear_venta.html'  
-    success_url = reverse_lazy('pendientes')
+    success_url = reverse_lazy('crear_venta')
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
