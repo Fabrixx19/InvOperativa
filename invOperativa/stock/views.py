@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, FormView
 from django.views.generic import View, ListView
 from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
@@ -202,7 +202,6 @@ class PredecirDemanda(CreateView):
         
         # Obtener pesos del formulario
         pesos = list(map(float, self.request.POST['pesos'].split(',')))
-        print(pesos)
         
         if len(pesos) != cant_periodos:
             form.add_error('pesos', f"Debe ingresar exactamente {cant_periodos} pesos.")
@@ -382,6 +381,209 @@ class PredecirDemanda(CreateView):
         
         errorP = error_porcentual(demandas, demandas_predecidas)
         return errorP
+
+
+class PrediccionPonderadoView(FormView):
+    template_name = 'prediccion_ponderado.html'  # Nombre del template HTML
+    form_class = PrediccionPonderadoForm
+    success_url = reverse_lazy('resultado_demanda')  # URL a redirigir después de guardar el formulario
+
+    def form_valid(self, form):
+        prediccion = self.object  
+        
+        cant_periodos = form.cleaned_data['cantPeriodos']
+        anio = form.cleaned_data['anioPrediccion']
+        mes = form.cleaned_data['mesPrediccion']
+        
+        # Obtener pesos del formulario
+        pesos = list(map(float, self.request.POST['pesos'].split(',')))
+        
+        if len(pesos) != cant_periodos:
+            form.add_error('pesos', f"Debe ingresar exactamente {cant_periodos} pesos.")
+            return self.form_invalid(form)
+
+        demanda_ponderado = self.metodo_ponderado(prediccion, pesos)
+        
+        demanda_predecida = int(demanda_ponderado)
+        # Obtener la demanda para el periodo especificado
+        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes)
+        # Actualizar la demanda predicha con el valor de demanda aceptada
+        demanda.demandaPredecida = demanda_predecida
+        # Guardar la demanda actualizada
+        demanda.save()
+        
+        # Guarda el formulario
+        form.save()
+        return redirect('resultado_demanda', resultado=demanda_predecida, metodo='Promedio Movil Ponderado')
+    
+    def metodo_ponderado(self, prediccion, pesos):
+        n = prediccion.cantPeriodos
+        mes = prediccion.mesPrimerPeriodo
+        anio = prediccion.anioPrimerPeriodo
+        
+        demandas = []
+        for i in range(1,n+1):
+            if mes <= i:
+                mes = 13
+                anio -= 1
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i)
+            demandas.append(prediccion_anterior.demandaReal)
+        
+        demanda_ponde = promedio_movil_ponderado(demandas, pesos)
+        return demanda_ponde
+
+
+class PrediccionExponencialView(FormView):
+    template_name = 'prediccion_exponencial.html'  # Nombre del template HTML
+    form_class = PrediccionExponencialForm
+    success_url = reverse_lazy('resultado_demanda')  # URL a redirigir después de guardar el formulario
+
+    def form_valid(self, form):
+        prediccion = self.object  
+        
+        anio = form.cleaned_data['anioPrediccion']
+        mes = form.cleaned_data['mesPrediccion']
+
+        demanda_exponencial = self.metodo_exponen(prediccion)
+        
+        demanda_predecida = int(demanda_exponencial)
+        # Obtener la demanda para el periodo especificado
+        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes)
+        # Actualizar la demanda predicha con el valor de demanda aceptada
+        demanda.demandaPredecida = demanda_predecida
+        # Guardar la demanda actualizada
+        demanda.save()
+        
+        # Guarda el formulario
+        form.save()
+        return redirect('resultado_demanda', resultado=demanda_predecida, metodo='Exponencial')
+    
+    def metodo_exponen(self, prediccion):
+        mes = prediccion.mesPrimerPeriodo
+        anio = prediccion.anioPrimerPeriodo
+        if mes == 1:
+            mes = 13
+            anio -= 1
+        
+        cofSua = prediccion.coeficienteSuavizacion
+        demandaAnterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1)
+        demanda_real_anterior = demandaAnterior.demandaReal
+        demanda_predecida_anterior = demandaAnterior.demandaPredecida
+        if demanda_predecida_anterior == 0:
+            if mes == 2:
+                mes = 14
+                anio -= 1
+                
+            demanda_predecida_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-2).demandaReal
+        
+        demanda_predecida_exponencial = promedioExponencia(demanda_predecida_anterior, demanda_real_anterior, cofSua)
+        return demanda_predecida_exponencial 
+
+
+class PrediccionRegresionView(FormView):
+    template_name = 'prediccion_regresion.html'  # Nombre del template HTML
+    form_class = PrediccionRegresionForm
+    success_url = reverse_lazy('resultado_demanda')  # URL a redirigir después de guardar el formulario
+
+    def form_valid(self, form):
+        prediccion = self.object  
+        
+        anio = form.cleaned_data['anioPrediccion']
+        mes = form.cleaned_data['mesPrediccion']
+
+        demanda_regresion = self.metodo_regresion(prediccion)
+        
+        demanda_predecida = int(demanda_regresion)
+        # Obtener la demanda para el periodo especificado
+        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes)
+        # Actualizar la demanda predicha con el valor de demanda aceptada
+        demanda.demandaPredecida = demanda_predecida
+        # Guardar la demanda actualizada
+        demanda.save()
+        
+        # Guarda el formulario
+        form.save()
+        return redirect('resultado_demanda', resultado=demanda_predecida, metodo='Regresión Lineal')
+    
+    def metodo_regresion(self, prediccion):
+        
+        n = prediccion.cantPeriodos
+        mes = prediccion.mesPrimerPeriodo
+        anio = prediccion.anioPrimerPeriodo
+        
+        demandas = []
+        for i in range(1,n+1):
+            if mes <= i:
+                mes = 13
+                anio -= 1
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i)
+            demandas.append(prediccion_anterior.demandaReal)
+        
+        demanda_regresion = regresion_lineal(demandas, n)
+        return demanda_regresion
+
+
+class PrediccionEstacionalView(FormView):
+    template_name = 'prediccion_estacional.html'  # Nombre del template HTML
+    form_class = PrediccionEstacionalForm
+    success_url = reverse_lazy('resultado_demanda')  # URL a redirigir después de guardar el formulario
+
+    def form_valid(self, form):
+        prediccion = self.object  
+        
+        anio = form.cleaned_data['anioPrediccion']
+        mes = form.cleaned_data['mesPrediccion']
+        if mes != 1:
+            demanda_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1)
+        else:
+            demanda_anterior = get_object_or_404(Demanda, anioDemanda=anio-1, mesDemanda=12)
+        d= demanda_anterior.demandaReal
+            
+        demanda_estacional = self.metodo_estacional(prediccion, d)
+        
+        demanda_predecida = int(demanda_estacional)
+        # Obtener la demanda para el periodo especificado
+        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes)
+        # Actualizar la demanda predicha con el valor de demanda aceptada
+        demanda.demandaPredecida = demanda_predecida
+        # Guardar la demanda actualizada
+        demanda.save()
+        
+        # Guarda el formulario
+        form.save()
+        return redirect('resultado_demanda', resultado=demanda_predecida, metodo='Estacional')
+    
+    def metodo_estacional(self, prediccion, regresion):
+        n = prediccion.cantPeriodos
+        mes = prediccion.mesPrimerPeriodo
+        anio = prediccion.anioPrimerPeriodo
+        
+        demandasActual = []
+        demandasAnterior1 = []
+        demandasAnterior2 = []
+        for i in range(n):
+            if mes <= i:
+                mes = 13
+                anio -= 1
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-1, mesDemanda=mes-i)
+            demandasActual.append(prediccion_anterior.demandaReal)
+            
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-2, mesDemanda=mes-i)
+            demandasAnterior1.append(prediccion_anterior.demandaReal)
+            
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-3, mesDemanda=mes-i)
+            demandasAnterior2.append(prediccion_anterior.demandaReal)
+        
+        demandaEstacional = estacionalidad(demandasActual, demandasAnterior1, demandasAnterior2, regresion)
+        return demandaEstacional
+
+
+def resultado_demanda_view(request, resultado, metodo):
+    context = {
+        'resultado': resultado,
+        'metodo': metodo
+    }
+    return render(request, 'resultado_demanda_estandar.html', context)
 
 
 class ResultadosDemanda(TemplateView):

@@ -20,7 +20,11 @@ urlpatterns = [
     path('crear_orden/', CrearOrdenDeCompraView.as_view(), name='crear_orden_de_compra'),
     path('ordenes/', ListarOrdenesDeCompraView.as_view(), name='listar_ordenes_de_compra'),
     path('verificar_entregas/', VerificarEntregasView.as_view(), name='verificar_entregas'),
-    
+    path('predecir_ponderado/', PrediccionPonderadoView.as_view(), name='predecir_ponderado'),
+    path('predecir_exponencial/', PrediccionExponencialView.as_view(), name='predecir_exponencial'),
+    path('predecir_regresion/', PrediccionRegresionView.as_view(), name='predecir_regresion'),
+    path('predecir_estacional/', PrediccionEstacionalView.as_view(), name='predecir_estacional'),
+    path('resultado_demanda/<int:resultado>/<str:metodo>/', resultado_demanda_view, name='resultado_demanda'),
 
 ]
 
