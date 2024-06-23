@@ -58,7 +58,7 @@ class Prediccion_Demanda(models.Model):
     errorAceptable = models.FloatField() #ingresa
     mesPrediccion = models.IntegerField()    #ingresa
     anioPrediccion = models.IntegerField()   #ingresa
-    demandas = models.ManyToManyField(Demanda, related_name="predicciones")
+    articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='predicciones')
     metodoError = models.ForeignKey(MetodoError, on_delete=models.CASCADE, related_name='predicciones') #Ingresar
     
 

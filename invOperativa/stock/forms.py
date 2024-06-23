@@ -42,7 +42,7 @@ class ArticuloForm(forms.ModelForm):
 class PrediccionDemandaForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
-        fields = ['cantPeriodos', 'coeficienteSuavizacion', 'errorAceptable', 'mesPrediccion', 'anioPrediccion', 'metodoError']
+        fields = ['cantPeriodos', 'coeficienteSuavizacion', 'articulo', 'errorAceptable', 'mesPrediccion', 'anioPrediccion', 'metodoError']
         
     pesos = forms.CharField(widget=forms.Textarea, help_text="Ingrese los pesos separados por comas.")
 
@@ -50,28 +50,50 @@ class PrediccionDemandaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['metodoError'].empty_label = None
         self.fields['metodoError'].label_from_instance = lambda obj: obj.nombreME
+        self.fields['articulo'].empty_label = None
+        self.fields['articulo'].label_from_instance = lambda obj: obj.nombreArticulo
 
 class PrediccionExponencialForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
-        fields = ['coeficienteSuavizacion','mesPrediccion', 'anioPrediccion']
+        fields = ['coeficienteSuavizacion','mesPrediccion', 'anioPrediccion', 'articulo']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['articulo'].empty_label = None
+        self.fields['articulo'].label_from_instance = lambda obj: obj.nombreArticulo
 
 class PrediccionPonderadoForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
-        fields = ['cantPeriodos','mesPrediccion', 'anioPrediccion']
+        fields = ['cantPeriodos','mesPrediccion', 'anioPrediccion', 'articulo']
         
     pesos = forms.CharField(widget=forms.Textarea, help_text="Ingrese los pesos separados por comas.")
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['articulo'].empty_label = None
+        self.fields['articulo'].label_from_instance = lambda obj: obj.nombreArticulo
 
 class PrediccionRegresionForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
-        fields = ['cantPeriodos','mesPrediccion', 'anioPrediccion']
+        fields = ['cantPeriodos','mesPrediccion', 'anioPrediccion', 'articulo']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['articulo'].empty_label = None
+        self.fields['articulo'].label_from_instance = lambda obj: obj.nombreArticulo
 
 class PrediccionEstacionalForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
-        fields = ['cantPeriodos', 'mesPrediccion', 'anioPrediccion']
+        fields = ['cantPeriodos', 'mesPrediccion', 'anioPrediccion', 'articulo']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['articulo'].empty_label = None
+        self.fields['articulo'].label_from_instance = lambda obj: obj.nombreArticulo
 
 class AsignarProveedorForm(forms.ModelForm):
     class Meta:
