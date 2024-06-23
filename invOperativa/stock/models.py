@@ -53,9 +53,9 @@ class MetodoError(models.Model):
     
 class Prediccion_Demanda(models.Model):
     codPD = models.IntegerField(primary_key=True)
-    cantPeriodos = models.IntegerField(null=False, blank=False) #ingresa
-    coeficienteSuavizacion = models.FloatField(null=False, blank=False) #ingresa
-    errorAceptable = models.FloatField(null=False, blank=False) #ingresa
+    cantPeriodos = models.IntegerField() #ingresa
+    coeficienteSuavizacion = models.FloatField() #ingresa
+    errorAceptable = models.FloatField() #ingresa
     mesPrimerPeriodo = models.IntegerField()    #ingresa
     anioPrimerPeriodo = models.IntegerField()   #ingresa
     demandas = models.ManyToManyField(Demanda, related_name="predicciones")

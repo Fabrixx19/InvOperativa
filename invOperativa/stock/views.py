@@ -18,13 +18,16 @@ from datetime import datetime, timedelta
 
 # Create your views here.
 
+
 def inicio(request):
     #return HttpResponse('Hola ando')
     return render(request, "inicio.html")
 
+
 def elegirMPrediccion(request):
     #return HttpResponse('Hola ando')
     return render(request, "elegir_metodo_prediccion.html")
+
 
 # Esta vista es para procesar la solicitud del ususario
 def ventas_por_mes(request):
@@ -85,6 +88,13 @@ class CrearVenta(CreateView):
 
         # Reducir el stock del artículo
         articulo.stockArticulo -= self.object.cantVenta
+        
+        #verificar si hay cambio de estado
+        if articulo.puntoPedido != 0 and articulo.puntoPedido >= articulo.stockArticulo:
+            articulo.estado = EstadoArticulo.objects.get(nombreEA="Reponer")
+        if articulo.stockSeguridad != 0 and articulo.stockSeguridad >= articulo.stockArticulo:
+            articulo.estado = EstadoArticulo.objects.get(nombreEA="Faltante")
+            
         articulo.save()
 
         # Guardar la venta con la demanda asociada
@@ -513,9 +523,10 @@ class CrearOrdenDeCompraView(CreateView):
     success_url = reverse_lazy('listar_ordenes_de_compra')
 
     def form_valid(self, form):
-        form.instance.estado = EstadoOrdenCompra.objects.get(nombre='Pendiente')
+        form.instance.estado = EstadoOrdenCompra.objects.get(nombreEOC='Pendiente')
         form.instance.diasDemoraOrden = form.instance.proveedor.diasDeDemora
         return super().form_valid(form)
+
 
 class VerificarEntregasView(View):
     def get(self, request, *args, **kwargs):
@@ -533,6 +544,7 @@ class VerificarEntregasView(View):
                 orden.save()
         
         return redirect('listar_ordenes_de_compra')
+
 
 class ListarOrdenesDeCompraView(ListView):
     model = OrdenDeCompra

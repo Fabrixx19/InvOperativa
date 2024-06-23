@@ -51,6 +51,28 @@ class PrediccionDemandaForm(forms.ModelForm):
         self.fields['metodoError'].empty_label = None
         self.fields['metodoError'].label_from_instance = lambda obj: obj.nombreME
 
+class PrediccionExponencialForm(forms.ModelForm):
+    class Meta:
+        model = Prediccion_Demanda
+        fields = ['coeficienteSuavizacion','mesPrimerPeriodo', 'anioPrimerPeriodo']
+
+class PrediccionPonderadoForm(forms.ModelForm):
+    class Meta:
+        model = Prediccion_Demanda
+        fields = ['cantPeriodos','mesPrimerPeriodo', 'anioPrimerPeriodo']
+        
+    pesos = forms.CharField(widget=forms.Textarea, help_text="Ingrese los pesos separados por comas.")
+
+class PrediccionRegresionForm(forms.ModelForm):
+    class Meta:
+        model = Prediccion_Demanda
+        fields = ['cantPeriodos','mesPrimerPeriodo', 'anioPrimerPeriodo']
+
+class PrediccionEstacionalForm(forms.ModelForm):
+    class Meta:
+        model = Prediccion_Demanda
+        fields = ['cantPeriodos', 'mesPrimerPeriodo', 'anioPrimerPeriodo']
+
 class AsignarProveedorForm(forms.ModelForm):
     class Meta:
         model = Articulo
