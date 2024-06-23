@@ -106,7 +106,7 @@ class CrearArticulo(CreateView):
     model = Articulo
     form_class = ArticuloForm
     template_name = 'crear_articulo.html'
-    success_url = reverse_lazy('pendientes')
+    success_url = reverse_lazy('lista_articulos')
 
     def form_valid(self, form):
         response = super().form_valid(form)

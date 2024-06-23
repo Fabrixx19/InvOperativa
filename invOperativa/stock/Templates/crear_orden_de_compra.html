@@ -1,4 +1,76 @@
 <!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Orden de Compra</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 20px;
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+        .form-container {
+            background-color: #2e2e2e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-top: 50px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .btn-custom {
+            background-color: #ffb703;
+            color: black;
+            border: none;
+        }
+        .btn-custom:hover {
+            background-color: #ffa500;
+        }
+        .back-link {
+            color: #ffb703;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        .back-link:hover {
+            color: #ffa500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center text-warning my-4">Crear Orden de Compra</h1>
+        <div class="d-flex justify-content-start mb-3">
+            <a href="{% url 'inicio' %}" class="btn btn-warning"><i class="bi bi-arrow-left-square-fill"></i> Volver al Inicio</a>
+        </div>
+    </div>
+    <div class="form-container">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-custom w-100">Crear Orden</button>
+        </form>
+        <div class="text-center mt-3">
+            <a href="{% url 'listar_ordenes_de_compra' %}" class="back-link">Volver a la lista de órdenes</a>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-iZc5avFbtpjQTZs1xWMP2IeO6/UHEf7rj3ZwD7SceEY9zWw81cvq5Z65b8oRYG6S" crossorigin="anonymous"></script>
+</body>
+</html>
+
+
+
+
+<!--
+<!DOCTYPE html>
 <html>
 <head>
     <title>Crear Orden de Compra</title>
@@ -12,4 +84,4 @@
     </form>
     <a href="{% url 'listar_ordenes_de_compra' %}">Volver a la lista de órdenes</a>
 </body>
-</html>
+</html>-->

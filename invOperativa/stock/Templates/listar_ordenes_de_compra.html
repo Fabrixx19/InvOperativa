@@ -1,4 +1,74 @@
 <!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Órdenes de Compra</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background-color: #212529;
+            color: #fff;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card shadow">
+            <div class="card-body">
+                <h1 class="card-title mb-4 text-center text-warning">Órdenes de Compra</h1>
+                <a href="{% url 'inicio' %}" class="btn btn-warning mb-3"><i class="bi bi-arrow-left-square-fill"></i> Volver al Inicio</a>
+                <a href="{% url 'crear_orden_de_compra' %}" class="btn btn-warning mb-3"><i class="bi bi-plus-square-fill"></i> Crear Nueva Orden</a>
+                <a href="{% url 'verificar_entregas' %}" class="btn btn-warning mb-3"><i class="bi bi-check-square-fill"></i> Verificar Entregas</a>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="background-color: rgba(221, 182, 9, 0.795);">Artículo</th>
+                                <th scope="col" style="background-color: rgba(221, 182, 9, 0.795);">Cantidad</th>
+                                <th scope="col" style="background-color: rgba(221, 182, 9, 0.795);">Estado</th>
+                                <th scope="col" style="background-color: rgba(221, 182, 9, 0.795);">Fecha de Orden</th>
+                                <th scope="col" style="background-color: rgba(221, 182, 9, 0.795);">Proveedor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for orden in ordenes %}
+                            <tr>
+                                <td>{{ orden.articulo.nombreArticulo }}</td>
+                                <td>{{ orden.cantidad }}</td>
+                                <td>{{ orden.estado.nombre }}</td>
+                                <td>{{ orden.fechaOrden }}</td>
+                                <td>{{ orden.proveedor.nombreProveedor }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de Bootstrap (opcional, si no los tienes cargados de otra forma) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-iZc5avFbtpjQTZs1xWMP2IeO6/UHEf7rj3ZwD7SceEY9zWw81cvq5Z65b8oRYG6S" crossorigin="anonymous"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+<!--
+<!DOCTYPE html>
 <html>
 <head>
     <title>Órdenes de Compra</title>
@@ -19,4 +89,4 @@
         {% endfor %}
     </ul>
 </body>
-</html>
+</html>-->

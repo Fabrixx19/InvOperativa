@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
 <head>
@@ -6,39 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Venta</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 20px;
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+        .form-container {
+            background-color: #2e2e2e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-top: 50px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .btn-custom {
+            background-color: #ffb703;
+            color: black;
+            border: none;
+        }
+        .btn-custom:hover {
+            background-color: #ffa500;
+        }
+        .back-link {
+            color: #ffb703;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        .back-link:hover {
+            color: #ffa500;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="card shadow">
-            <div class="card-body">
-                <h1 class="card-title mb-4 text-center text-warning">Crear Venta</h1>
-                <form method="post">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <div class="mb-3">
-                        <label for="id_articulo" class="form-label">Stock Disponible:</label>
-                        <span id="stock-disponible" class="fw-bold">Selecciona un artículo</span>
-                    </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">Guardar</button>
-                    </div>
-                </form>
-            </div>
+    <div class="container">
+        <h1 class="text-center text-warning my-4">Crear Articulo</h1>
+        <div class="d-flex justify-content-start mb-3">
+            <a href="{% url 'lista_articulos' %}" class="btn btn-warning"><i class="bi bi-arrow-left-square-fill"></i> Volver listado</a>
         </div>
-
+    </div>
+    <div class="form-container">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-custom w-100">Guardar</button>
+        </form>
         {% if form.errors %}
-        <div class="alert alert-danger mt-4">
-            <ul class="mb-0">
+        <div class="errors mt-3">
+            <ul>
                 {% for field, errors in form.errors.items %}
-                <li>{{ field }}: {{ errors }}</li>
+                    <li>{{ field }}: {{ errors }}</li>
                 {% endfor %}
             </ul>
         </div>
         {% endif %}
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-iZc5avFbtpjQTZs1xWMP2IeO6/UHEf7rj3ZwD7SceEY9zWw81cvq5Z65b8oRYG6S" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#id_articulo').change(function() {
@@ -62,9 +94,6 @@
             });
         });
     </script>
-
-    <!-- Scripts de Bootstrap (opcional, si no los tienes cargados de otra forma) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-iZc5avFbtpjQTZs1xWMP2IeO6/UHEf7rj3ZwD7SceEY9zWw81cvq5Z65b8oRYG6S" crossorigin="anonymous"></script>
 </body>
 </html>
 

@@ -17,13 +17,13 @@ class VentaForm(forms.ModelForm):
             'fechaVenta': forms.DateInput(attrs={'type': 'date'}),
         }
     articulo = forms.ModelChoiceField(
-        queryset=Articulo.objects.all(),
+        queryset=Articulo.objects.filter(fechaBajaArticulo__isnull=True),
         widget=forms.Select,
         label="Artículo"
     )
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['articulo'].queryset = Articulo.objects.all()
+        self.fields['articulo'].queryset = Articulo.objects.filter(fechaBajaArticulo__isnull=True)
         self.fields['articulo'].label_from_instance = lambda obj: f"{obj.nombreArticulo}"
 
 
@@ -113,7 +113,7 @@ class OrdenDeCompraForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     articulo = forms.ModelChoiceField(
-        queryset=Articulo.objects.all(),
+        queryset=Articulo.objects.filter(fechaBajaArticulo__isnull=True),
         label="Artículo",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
@@ -121,4 +121,10 @@ class OrdenDeCompraForm(forms.ModelForm):
     class Meta:
         model = OrdenDeCompra
         fields = ['cantidad', 'articulo', 'proveedor']
-        
+   
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['articulo'].queryset = Articulo.objects.filter(fechaBajaArticulo__isnull=True)           
+        self.fields['articulo'].label_from_instance = lambda obj: obj.nombreArticulo
+        self.fields['proveedor'].empty_label = None
+        self.fields['proveedor'].label_from_instance = lambda obj: obj.nombreProveedor
