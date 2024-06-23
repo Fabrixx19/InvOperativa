@@ -56,8 +56,8 @@ class Prediccion_Demanda(models.Model):
     cantPeriodos = models.IntegerField() #ingresa
     coeficienteSuavizacion = models.FloatField() #ingresa
     errorAceptable = models.FloatField() #ingresa
-    mesPrimerPeriodo = models.IntegerField()    #ingresa
-    anioPrimerPeriodo = models.IntegerField()   #ingresa
+    mesPrediccion = models.IntegerField()    #ingresa
+    anioPrediccion = models.IntegerField()   #ingresa
     demandas = models.ManyToManyField(Demanda, related_name="predicciones")
     metodoError = models.ForeignKey(MetodoError, on_delete=models.CASCADE, related_name='predicciones') #Ingresar
     

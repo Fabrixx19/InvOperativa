@@ -42,7 +42,7 @@ class ArticuloForm(forms.ModelForm):
 class PrediccionDemandaForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
-        fields = ['cantPeriodos', 'coeficienteSuavizacion', 'errorAceptable', 'mesPrimerPeriodo', 'anioPrimerPeriodo', 'metodoError']
+        fields = ['cantPeriodos', 'coeficienteSuavizacion', 'errorAceptable', 'mesPrediccion', 'anioPrediccion', 'metodoError']
         
     pesos = forms.CharField(widget=forms.Textarea, help_text="Ingrese los pesos separados por comas.")
 
@@ -54,24 +54,24 @@ class PrediccionDemandaForm(forms.ModelForm):
 class PrediccionExponencialForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
-        fields = ['coeficienteSuavizacion','mesPrimerPeriodo', 'anioPrimerPeriodo']
+        fields = ['coeficienteSuavizacion','mesPrediccion', 'anioPrediccion']
 
 class PrediccionPonderadoForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
-        fields = ['cantPeriodos','mesPrimerPeriodo', 'anioPrimerPeriodo']
+        fields = ['cantPeriodos','mesPrediccion', 'anioPrediccion']
         
     pesos = forms.CharField(widget=forms.Textarea, help_text="Ingrese los pesos separados por comas.")
 
 class PrediccionRegresionForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
-        fields = ['cantPeriodos','mesPrimerPeriodo', 'anioPrimerPeriodo']
+        fields = ['cantPeriodos','mesPrediccion', 'anioPrediccion']
 
 class PrediccionEstacionalForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
-        fields = ['cantPeriodos', 'mesPrimerPeriodo', 'anioPrimerPeriodo']
+        fields = ['cantPeriodos', 'mesPrediccion', 'anioPrediccion']
 
 class AsignarProveedorForm(forms.ModelForm):
     class Meta:

@@ -196,8 +196,8 @@ class PredecirDemanda(CreateView):
         prediccion = self.object  
         
         cant_periodos = form.cleaned_data['cantPeriodos']
-        mes_primer_periodo = form.cleaned_data['mesPrimerPeriodo']
-        anio_primer_periodo = form.cleaned_data['anioPrimerPeriodo']
+        mes_primer_periodo = form.cleaned_data['mesPrediccion']
+        anio_primer_periodo = form.cleaned_data['anioPrediccion']
         error_aceptable = form.cleaned_data['errorAceptable']
         
         # Obtener pesos del formulario
