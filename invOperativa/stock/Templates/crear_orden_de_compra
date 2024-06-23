@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crear Orden de Compra</title>
+</head>
+<body>
+    <h1>Crear Orden de Compra</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Crear Orden</button>
+    </form>
+    <a href="{% url 'listar_ordenes_de_compra' %}">Volver a la lista de órdenes</a>
+</body>
+</html>

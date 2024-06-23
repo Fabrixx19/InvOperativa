@@ -17,6 +17,9 @@ urlpatterns = [
     path('resultados/', ResultadosDemanda.as_view(), name='resultados_demanda'),
     path('articulo/<int:pk>/asignar_proveedor/', AsignarProveedorView.as_view(), name='asignar_proveedor'),
     path('elegirMPrediccion', views.elegirMPrediccion, name = 'elegirMPrediccion'),
+    path('crear_orden/', CrearOrdenDeCompraView.as_view(), name='crear_orden_de_compra'),
+    path('ordenes/', ListarOrdenesDeCompraView.as_view(), name='listar_ordenes_de_compra'),
+    path('verificar_entregas/', VerificarEntregasView.as_view(), name='verificar_entregas'),
     
 
 ]

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Órdenes de Compra</title>
+</head>
+<body>
+    <h1>Órdenes de Compra</h1>
+    <a href="{% url 'crear_orden_de_compra' %}">Crear Nueva Orden</a>
+    <a href="{% url 'verificar_entregas' %}">Verificar Entregas</a>
+    <ul>
+        {% for orden in ordenes %}
+            <li>
+                Artículo: {{ orden.articulo.nombreArticulo }}<br>
+                Cantidad: {{ orden.cantidad }}<br>
+                Estado: {{ orden.estado.nombre }}<br>
+                Fecha de Orden: {{ orden.fechaOrden }}<br>
+                Proveedor: {{ orden.proveedor.nombreProveedor }}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

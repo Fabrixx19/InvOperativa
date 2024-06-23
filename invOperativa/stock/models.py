@@ -71,5 +71,14 @@ class OrdenDeCompra(models.Model):
     codODC = models.AutoField(primary_key=True)
     cantidad = models.IntegerField()
     estado = models.ForeignKey(EstadoOrdenCompra, on_delete=models.CASCADE, related_name='ordenDeCompra')
-    prediccion = models.OneToOneField(Prediccion_Demanda, on_delete=models.CASCADE)
+    articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='ordenDeCompra')
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, related_name='ordenDeCompra')
+    fechaOrden = models.DateField(auto_now_add=True)
+    diasDemoraOrden = models.IntegerField()
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:  # Solo establece diasDemoraOrden cuando se crea el objeto
+            self.diasDemoraOrden = self.proveedor.diasDeDemora
+            estado_pendiente = EstadoOrdenCompra.objects.get(nombre='Pendiente')
+            self.estado = estado_pendiente
+        super().save(*args, **kwargs)

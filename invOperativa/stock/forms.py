@@ -60,3 +60,21 @@ class AsignarProveedorForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['proveedor'].empty_label = None
         self.fields['proveedor'].label_from_instance = lambda obj: obj.nombreProveedor
+
+
+class OrdenDeCompraForm(forms.ModelForm):
+    proveedor = forms.ModelChoiceField(
+        queryset=Proveedor.objects.all(),
+        label="Proveedor",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    articulo = forms.ModelChoiceField(
+        queryset=Articulo.objects.all(),
+        label="Artículo",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        model = OrdenDeCompra
+        fields = ['cantidad', 'articulo', 'proveedor']
+        
