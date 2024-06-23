@@ -725,17 +725,17 @@ class CrearOrdenDeCompraView(CreateView):
     success_url = reverse_lazy('listar_ordenes_de_compra')
 
     def form_valid(self, form):
-        form.instance.estado = EstadoOrdenCompra.objects.get(nombreEOC='Pendiente')
+        form.instance.estado = EstadoOrdenCompra.objects.get(nombreEC='Pendiente')
         form.instance.diasDemoraOrden = form.instance.proveedor.diasDeDemora
         return super().form_valid(form)
 
 
 class VerificarEntregasView(View):
     def get(self, request, *args, **kwargs):
-        pendientes = OrdenDeCompra.objects.filter(estado__nombre='Pendiente')
+        pendientes = OrdenDeCompra.objects.filter(estado__nombreEC='Pendiente')
         fecha_actual = datetime.now().date()
         
-        estado_entregada = EstadoOrdenCompra.objects.get(nombre='Entregada')
+        estado_entregada = EstadoOrdenCompra.objects.get(nombreEC='Entregado')
         
         for orden in pendientes:
             fecha_entrega = orden.fechaOrden + timedelta(days=orden.diasDemoraOrden)

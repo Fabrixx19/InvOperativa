@@ -79,6 +79,6 @@ class OrdenDeCompra(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:  # Solo establece diasDemoraOrden cuando se crea el objeto
             self.diasDemoraOrden = self.proveedor.diasDeDemora
-            estado_pendiente = EstadoOrdenCompra.objects.get(nombre='Pendiente')
+            estado_pendiente = EstadoOrdenCompra.objects.get(nombreEC='Pendiente')
             self.estado = estado_pendiente
         super().save(*args, **kwargs)
