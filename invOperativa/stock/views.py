@@ -651,6 +651,7 @@ class AsignarProveedorView(UpdateView):
         # verificar modelo de inventario
         modelo = articulo.modeloInventario.nombreMI
         codArt = articulo.codArticulo
+        print(f"El modelo es {modelo}")
 
         if modelo == "Lote Fijo":
             loteO = self.calcularLO(codArt, proveedor)
@@ -660,10 +661,19 @@ class AsignarProveedorView(UpdateView):
             articulo.loteOptimo = loteO
             articulo.puntoPedido = puntoP
             articulo.stockSeguridad = stockS
+            print(f"ss = {stockS}, pp = {puntoP}, loteOptimo = {loteO}")
+            
         else:
             stockS = self.calcularSSInt(proveedor)
-
+            q = self.calcularQ(proveedor, stockS)
+            puntoP = self.calcularPPIF(codArt, proveedor, stockS)
+            
             articulo.stockSeguridad = stockS
+            articulo.cantidasIntervaloFijo = q
+            articulo.puntoPedido = puntoP
+            
+            print(f"ss = {stockS}, pp = {puntoP}, Q = {q}")
+            
         
         articulo.save()
         return super().form_valid(form)
@@ -679,14 +689,18 @@ class AsignarProveedorView(UpdateView):
         cp = proveedor.costo_pedido
         demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, mesDemanda=mes)
         d = demanda.demandaReal
-        
         loteO = EOQ(d, cp)
         
         return loteO
 
     def calcularPP(self, cod_articulo, proveedor):
         anio = datetime.now().year
-        mes = datetime.now().month - 1
+        mes = datetime.now().month
+        if mes != 1 :
+            mes -= 1
+        else:
+            anio -= 1
+            mes = 12
 
         l = proveedor.diasDeDemora
         demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, mesDemanda=mes)
@@ -703,11 +717,15 @@ class AsignarProveedorView(UpdateView):
         
         return stockS
         
-        
 # Intervalo Fijo    
     def calcularSSInt(self, proveedor, cod_articulo):
         anio = datetime.now().year
-        mes = datetime.now().month - 1
+        mes = datetime.now().month
+        if mes != 1 :
+            mes -= 1
+        else:
+            anio -= 1
+            mes = 12
 
         l = proveedor.diasDeDemora
         cp = proveedor.costo_pedido
@@ -716,7 +734,40 @@ class AsignarProveedorView(UpdateView):
         stockS = SSIF (dd,cp,l)
         
         return stockS
+ 
+    def calcularQ(self, proveedor, stockS):
+        anio = datetime.now().year
+        mes = datetime.now().month
+        if mes != 1 :
+            mes -= 1
+        else:
+            anio -= 1
+            mes = 12
+        l = proveedor.diasDeDemora
+        cp = proveedor.costo_pedido
+        demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, mesDemanda=mes)
+        dd = demanda.demandaReal / 30  # Esto supone que demanda es un valor total mensual
+        
+        cantidad = QIF(dd, cp, l, stockS)
+        return cantidad
     
+    def calcularPPIF(self, cod_articulo, proveedor, stockS):
+        anio = datetime.now().year
+        mes = datetime.now().month
+        if mes != 1 :
+            mes -= 1
+        else:
+            anio -= 1
+            mes = 12
+
+        l = proveedor.diasDeDemora
+        demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, mesDemanda=mes)
+        demandad = demanda.demandaReal / 30  # Esto supone que demanda es un valor total mensual
+        
+        puntoPedido = PPIF(demandad, l, stockS)
+        
+        return puntoPedido
+        
     
 class CrearOrdenDeCompraView(CreateView):
     model = OrdenDeCompra
@@ -845,3 +896,15 @@ def SSIF (dd,cp,l):
     t =  math.sqrt((2/dd)*(cp/ca)*(1/(1-(dd/k))))
     ss = z*math.sqrt(t+l)
     return ss
+
+def QIF (dd,cp,l,ss):
+    ca = 10
+    k = 100
+    z = 1.64
+    t =  math.sqrt((2/dd)*(cp/ca)*(1/(1-(dd/k))))
+    q= dd*(t+l)+ss
+    return q
+
+def PPIF(dd,l,ss):
+    pp = (dd * l)+ss
+    return pp

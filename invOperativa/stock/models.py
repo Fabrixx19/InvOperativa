@@ -26,6 +26,7 @@ class Articulo(models.Model):
     puntoPedido = models.IntegerField(default=0)
     stockSeguridad = models.IntegerField(default=0)
     loteOptimo = models.IntegerField(default=0)
+    cantidasIntervaloFijo = models.IntegerField(default=0)
     estado = models.ForeignKey(EstadoArticulo, on_delete=models.CASCADE, related_name='articulos')
     modeloInventario = models.ForeignKey(ModeloInventario, on_delete=models.CASCADE, related_name="articulos")
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, related_name='articulos', null=True)
