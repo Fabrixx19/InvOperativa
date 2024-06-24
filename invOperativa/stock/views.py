@@ -679,8 +679,8 @@ class AsignarProveedorView(UpdateView):
             print(f"ss = {stockS}, pp = {puntoP}, loteOptimo = {loteO}")
             
         else:
-            stockS = self.calcularSSInt(proveedor)
-            q = self.calcularQ(proveedor, stockS)
+            stockS = self.calcularSSInt(proveedor, codArt)
+            q = self.calcularQ(proveedor, stockS, codArt)
             puntoP = self.calcularPPIF(codArt, proveedor, stockS)
             
             articulo.stockSeguridad = stockS
@@ -750,7 +750,7 @@ class AsignarProveedorView(UpdateView):
         
         return stockS
  
-    def calcularQ(self, proveedor, stockS):
+    def calcularQ(self, proveedor, stockS, cod_articulo):
         anio = datetime.now().year
         mes = datetime.now().month
         if mes != 1 :
@@ -760,7 +760,7 @@ class AsignarProveedorView(UpdateView):
             mes = 12
         l = proveedor.diasDeDemora
         cp = proveedor.costo_pedido
-        demanda = get_object_or_404(Demanda, articulo=cod_articulo, anioDemanda=anio, mesDemanda=mes)
+        demanda = get_object_or_404(Demanda, articulo = cod_articulo, anioDemanda=anio, mesDemanda=mes)
         dd = demanda.demandaReal / 30  # Esto supone que demanda es un valor total mensual
         
         cantidad = QIF(dd, cp, l, stockS)
