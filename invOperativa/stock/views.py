@@ -172,6 +172,21 @@ class ListaArticulos(ListView):
     def get_queryset(self):
         return Articulo.objects.filter(fechaBajaArticulo__isnull=True)   
 
+class ListaArticulosFaltantes(ListView):
+    model = Articulo
+    template_name = 'listar_articulos_faltantes.html'
+    context_object_name = 'articulos'
+
+    def get_queryset(self):
+        return Articulo.objects.filter(fechaBajaArticulo__isnull=True, estado__nombreEA='Faltante')   
+
+class ListaArticulosReponer(ListView):
+    model = Articulo
+    template_name = 'listar_articulos_a_reponer.html'
+    context_object_name = 'articulos'
+
+    def get_queryset(self):
+        return Articulo.objects.filter(fechaBajaArticulo__isnull=True, estado__nombreEA='Reponer')   
 
 def ver_demandas_articulo(request, articulo_id):
     articulo = get_object_or_404(Articulo, pk=articulo_id)
