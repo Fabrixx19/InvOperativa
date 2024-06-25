@@ -92,6 +92,27 @@ class CrearVenta(CreateView):
         #verificar si hay cambio de estado
         if articulo.puntoPedido != 0 and articulo.puntoPedido >= articulo.stockArticulo:
             articulo.estado = EstadoArticulo.objects.get(nombreEA="Reponer")
+            
+            # Verificar si ya existe una orden de compra pendiente para este artículo
+            estado_pendiente = get_object_or_404(EstadoOrdenCompra, nombreEC="Pendiente")
+            orden_pendiente_existente = OrdenDeCompra.objects.filter(articulo=articulo, estado=estado_pendiente).exists()
+            
+            if not orden_pendiente_existente:
+                proveedor = articulo.proveedor
+                if proveedor:
+                    if articulo.modeloInventario.nombreMI == "Lote Fijo":
+                        cantidad = articulo.loteOptimo
+                    else:
+                        cantidad = articulo.cantidasIntervaloFijo
+
+                    nueva_orden = OrdenDeCompra.objects.create(
+                        cantidad=cantidad,
+                        estado=estado_pendiente,
+                        articulo=articulo,
+                        proveedor=proveedor,
+                        diasDemoraOrden=proveedor.diasDeDemora
+                    )
+
         if articulo.stockSeguridad != 0 and articulo.stockSeguridad >= articulo.stockArticulo:
             articulo.estado = EstadoArticulo.objects.get(nombreEA="Faltante")
             
@@ -214,6 +235,7 @@ class PredecirDemanda(CreateView):
         mes_primer_periodo = form.cleaned_data['mesPrediccion']
         anio_primer_periodo = form.cleaned_data['anioPrediccion']
         error_aceptable = form.cleaned_data['errorAceptable']
+        cod_art = form.cleaned_data['articulo']
         
         # Obtener pesos del formulario
         pesos = list(map(float, self.request.POST['pesos'].split(',')))
@@ -223,10 +245,10 @@ class PredecirDemanda(CreateView):
             return self.form_invalid(form)
 
         
-        demanda_exponencial = self.metodo_exponen(prediccion)
-        demanda_ponderado = self.metodo_ponderado(prediccion, pesos)
-        demanda_regresion = self.metodo_regresion(prediccion)
-        demanda_estacional = self.metodo_estacional(prediccion, demanda_regresion)
+        demanda_exponencial = self.metodo_exponen(prediccion, cod_art)
+        demanda_ponderado = self.metodo_ponderado(prediccion, pesos, cod_art)
+        demanda_regresion = self.metodo_regresion(prediccion, cod_art)
+        demanda_estacional = self.metodo_estacional(prediccion, demanda_regresion, cod_art)
         
         metodo_error = form.cleaned_data['metodoError']
         if metodo_error.nombreME == "Cuadrado Medio":
@@ -258,7 +280,7 @@ class PredecirDemanda(CreateView):
         # Redirigir a la vista de resultados
         return redirect('resultados_demanda')
     
-    def metodo_exponen(self, prediccion):
+    def metodo_exponen(self, prediccion, codArt):
         mes = prediccion.mesPrimerPeriodo
         anio = prediccion.anioPrimerPeriodo
         if mes == 1:
@@ -266,7 +288,7 @@ class PredecirDemanda(CreateView):
             anio -= 1
         
         cofSua = prediccion.coeficienteSuavizacion
-        demandaAnterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1)
+        demandaAnterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1, codArticulo=codArt)
         demanda_real_anterior = demandaAnterior.demandaReal
         demanda_predecida_anterior = demandaAnterior.demandaPredecida
         if demanda_predecida_anterior == 0:
@@ -274,12 +296,12 @@ class PredecirDemanda(CreateView):
                 mes = 14
                 anio -= 1
                 
-            demanda_predecida_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-2).demandaReal
+            demanda_predecida_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-2, codArticulo=codArt).demandaReal
         
         demanda_predecida_exponencial = promedioExponencia(demanda_predecida_anterior, demanda_real_anterior, cofSua)
         return demanda_predecida_exponencial    
         
-    def metodo_ponderado(self, prediccion, pesos):
+    def metodo_ponderado(self, prediccion, pesos, codArt):
         n = prediccion.cantPeriodos
         mes = prediccion.mesPrimerPeriodo
         anio = prediccion.anioPrimerPeriodo
@@ -289,14 +311,14 @@ class PredecirDemanda(CreateView):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, codArticulo=codArt)
             demandas.append(prediccion_anterior.demandaReal)
         print(f"las demandas que mande son {demandas}")
         
         demanda_ponde = promedio_movil_ponderado(demandas, pesos)
         return demanda_ponde
         
-    def metodo_regresion(self, prediccion):
+    def metodo_regresion(self, prediccion, codArt):
         
         n = prediccion.cantPeriodos
         mes = prediccion.mesPrimerPeriodo
@@ -307,13 +329,13 @@ class PredecirDemanda(CreateView):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, codArticulo=codArt)
             demandas.append(prediccion_anterior.demandaReal)
         
         demanda_regresion = regresion_lineal(demandas, n)
         return demanda_regresion
     
-    def metodo_estacional(self, prediccion, regresion):
+    def metodo_estacional(self, prediccion, regresion, codArt):
         n = prediccion.cantPeriodos
         mes = prediccion.mesPrimerPeriodo
         anio = prediccion.anioPrimerPeriodo
@@ -325,19 +347,19 @@ class PredecirDemanda(CreateView):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-1, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-1, mesDemanda=mes-i, codArticulo=codArt)
             demandasActual.append(prediccion_anterior.demandaReal)
             
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-2, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-2, mesDemanda=mes-i, codArticulo=codArt)
             demandasAnterior1.append(prediccion_anterior.demandaReal)
             
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-3, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-3, mesDemanda=mes-i, codArticulo=codArt)
             demandasAnterior2.append(prediccion_anterior.demandaReal)
         
         demandaEstacional = estacionalidad(demandasActual, demandasAnterior1, demandasAnterior2, regresion)
         return demandaEstacional
     
-    def metodo_cuadrado(self, prediccion, demanda):
+    def metodo_cuadrado(self, prediccion, demanda,):
         n = prediccion.cantPeriodos
         mes = prediccion.mesPrimerPeriodo
         anio = prediccion.anioPrimerPeriodo
@@ -347,14 +369,14 @@ class PredecirDemanda(CreateView):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, codArticulo=codArt)
             demandas.append(prediccion_anterior.demandaReal)
         demandas_predecidas = [demanda]
         for i in range(1,n):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, codArticulo=codArt)
             demandaP = prediccion_anterior.demandaPredecida
             if demandaP == 0:
                 if mes <= i+1:
@@ -399,29 +421,31 @@ class PredecirDemanda(CreateView):
 
 
 class PrediccionPonderadoView(FormView):
+    model = Prediccion_Demanda
     template_name = 'prediccion_ponderado.html'  # Nombre del template HTML
     form_class = PrediccionPonderadoForm
     success_url = reverse_lazy('resultado_demanda')  # URL a redirigir después de guardar el formulario
 
     def form_valid(self, form):
-        prediccion = self.object  
+        prediccion = form.save(commit=False)
         
         cant_periodos = form.cleaned_data['cantPeriodos']
         anio = form.cleaned_data['anioPrediccion']
         mes = form.cleaned_data['mesPrediccion']
+        cod_art = form.cleaned_data['articulo']
         
         # Obtener pesos del formulario
         pesos = list(map(float, self.request.POST['pesos'].split(',')))
-        
+
         if len(pesos) != cant_periodos:
             form.add_error('pesos', f"Debe ingresar exactamente {cant_periodos} pesos.")
             return self.form_invalid(form)
 
-        demanda_ponderado = self.metodo_ponderado(prediccion, pesos)
+        demanda_ponderado = self.metodo_ponderado(prediccion, pesos, cod_art)
         
         demanda_predecida = int(demanda_ponderado)
         # Obtener la demanda para el periodo especificado
-        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes)
+        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes, articulo_id=cod_art)
         # Actualizar la demanda predicha con el valor de demanda aceptada
         demanda.demandaPredecida = demanda_predecida
         # Guardar la demanda actualizada
@@ -431,17 +455,17 @@ class PrediccionPonderadoView(FormView):
         form.save()
         return redirect('resultado_demanda', resultado=demanda_predecida, metodo='Promedio Movil Ponderado')
     
-    def metodo_ponderado(self, prediccion, pesos):
+    def metodo_ponderado(self, prediccion, pesos, cod_art):
         n = prediccion.cantPeriodos
-        mes = prediccion.mesPrimerPeriodo
-        anio = prediccion.anioPrimerPeriodo
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
         
         demandas = []
         for i in range(1,n+1):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, articulo_id=cod_art)
             demandas.append(prediccion_anterior.demandaReal)
         
         demanda_ponde = promedio_movil_ponderado(demandas, pesos)
@@ -449,21 +473,22 @@ class PrediccionPonderadoView(FormView):
 
 
 class PrediccionExponencialView(FormView):
+    model = Prediccion_Demanda
     template_name = 'prediccion_exponencial.html'  # Nombre del template HTML
     form_class = PrediccionExponencialForm
     success_url = reverse_lazy('resultado_demanda')  # URL a redirigir después de guardar el formulario
 
     def form_valid(self, form):
-        prediccion = self.object  
-        
+        prediccion = form.save(commit=False)        
         anio = form.cleaned_data['anioPrediccion']
         mes = form.cleaned_data['mesPrediccion']
+        cod_art = form.cleaned_data['articulo']
 
-        demanda_exponencial = self.metodo_exponen(prediccion)
+        demanda_exponencial = self.metodo_exponen(prediccion, cod_art)
         
         demanda_predecida = int(demanda_exponencial)
         # Obtener la demanda para el periodo especificado
-        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes)
+        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes, articulo_id=cod_art)
         # Actualizar la demanda predicha con el valor de demanda aceptada
         demanda.demandaPredecida = demanda_predecida
         # Guardar la demanda actualizada
@@ -473,15 +498,15 @@ class PrediccionExponencialView(FormView):
         form.save()
         return redirect('resultado_demanda', resultado=demanda_predecida, metodo='Exponencial')
     
-    def metodo_exponen(self, prediccion):
-        mes = prediccion.mesPrimerPeriodo
-        anio = prediccion.anioPrimerPeriodo
+    def metodo_exponen(self, prediccion, cod_art):
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
         if mes == 1:
             mes = 13
             anio -= 1
         
         cofSua = prediccion.coeficienteSuavizacion
-        demandaAnterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1)
+        demandaAnterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1, articulo_id=cod_art)
         demanda_real_anterior = demandaAnterior.demandaReal
         demanda_predecida_anterior = demandaAnterior.demandaPredecida
         if demanda_predecida_anterior == 0:
@@ -489,10 +514,15 @@ class PrediccionExponencialView(FormView):
                 mes = 14
                 anio -= 1
                 
-            demanda_predecida_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-2).demandaReal
+            demanda_predecida_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-2, articulo_id=cod_art).demandaReal
         
         demanda_predecida_exponencial = promedioExponencia(demanda_predecida_anterior, demanda_real_anterior, cofSua)
         return demanda_predecida_exponencial 
+
+class PrediccionMasFavorableView(FormView):
+    template_name = 'prediccion_mas_favorable.html'  # Nombre del template HTML
+    form_class = PrediccionMasFavorableForm
+    success_url = reverse_lazy('resultado_demanda')  # URL a redirigir después de guardar el formulario
 
 
 class PrediccionRegresionView(FormView):
@@ -501,16 +531,17 @@ class PrediccionRegresionView(FormView):
     success_url = reverse_lazy('resultado_demanda')  # URL a redirigir después de guardar el formulario
 
     def form_valid(self, form):
-        prediccion = self.object  
+        prediccion = form.save(commit=False)
         
         anio = form.cleaned_data['anioPrediccion']
         mes = form.cleaned_data['mesPrediccion']
+        cod_art = form.cleaned_data['articulo']
 
-        demanda_regresion = self.metodo_regresion(prediccion)
+        demanda_regresion = self.metodo_regresion(prediccion, cod_art)
         
         demanda_predecida = int(demanda_regresion)
         # Obtener la demanda para el periodo especificado
-        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes)
+        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes, articulo_id=cod_art)
         # Actualizar la demanda predicha con el valor de demanda aceptada
         demanda.demandaPredecida = demanda_predecida
         # Guardar la demanda actualizada
@@ -520,18 +551,18 @@ class PrediccionRegresionView(FormView):
         form.save()
         return redirect('resultado_demanda', resultado=demanda_predecida, metodo='Regresión Lineal')
     
-    def metodo_regresion(self, prediccion):
+    def metodo_regresion(self, prediccion, cod_art):
         
         n = prediccion.cantPeriodos
-        mes = prediccion.mesPrimerPeriodo
-        anio = prediccion.anioPrimerPeriodo
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
         
         demandas = []
         for i in range(1,n+1):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, articulo_id=cod_art)
             demandas.append(prediccion_anterior.demandaReal)
         
         demanda_regresion = regresion_lineal(demandas, n)
@@ -539,26 +570,29 @@ class PrediccionRegresionView(FormView):
 
 
 class PrediccionEstacionalView(FormView):
+    model = Prediccion_Demanda
     template_name = 'prediccion_estacional.html'  # Nombre del template HTML
     form_class = PrediccionEstacionalForm
     success_url = reverse_lazy('resultado_demanda')  # URL a redirigir después de guardar el formulario
 
     def form_valid(self, form):
-        prediccion = self.object  
+        prediccion = form.save(commit=False)
         
         anio = form.cleaned_data['anioPrediccion']
         mes = form.cleaned_data['mesPrediccion']
+        cod_art = form.cleaned_data['articulo']
+
         if mes != 1:
-            demanda_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1)
+            demanda_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1, articulo_id=cod_art)
         else:
-            demanda_anterior = get_object_or_404(Demanda, anioDemanda=anio-1, mesDemanda=12)
+            demanda_anterior = get_object_or_404(Demanda, anioDemanda=anio-1, mesDemanda=12, articulo_id=cod_art)
         d= demanda_anterior.demandaReal
             
-        demanda_estacional = self.metodo_estacional(prediccion, d)
+        demanda_estacional = self.metodo_estacional(prediccion, d, cod_art)
         
         demanda_predecida = int(demanda_estacional)
         # Obtener la demanda para el periodo especificado
-        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes)
+        demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes, articulo_id=cod_art)
         # Actualizar la demanda predicha con el valor de demanda aceptada
         demanda.demandaPredecida = demanda_predecida
         # Guardar la demanda actualizada
@@ -568,10 +602,10 @@ class PrediccionEstacionalView(FormView):
         form.save()
         return redirect('resultado_demanda', resultado=demanda_predecida, metodo='Estacional')
     
-    def metodo_estacional(self, prediccion, regresion):
+    def metodo_estacional(self, prediccion, regresion, cod_art):
         n = prediccion.cantPeriodos
-        mes = prediccion.mesPrimerPeriodo
-        anio = prediccion.anioPrimerPeriodo
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
         
         demandasActual = []
         demandasAnterior1 = []
@@ -580,13 +614,13 @@ class PrediccionEstacionalView(FormView):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-1, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-1, mesDemanda=mes-i, articulo_id=cod_art)
             demandasActual.append(prediccion_anterior.demandaReal)
             
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-2, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-2, mesDemanda=mes-i, articulo_id=cod_art)
             demandasAnterior1.append(prediccion_anterior.demandaReal)
             
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-3, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-3, mesDemanda=mes-i, articulo_id=cod_art)
             demandasAnterior2.append(prediccion_anterior.demandaReal)
         
         demandaEstacional = estacionalidad(demandasActual, demandasAnterior1, demandasAnterior2, regresion)
@@ -672,23 +706,23 @@ class AsignarProveedorView(UpdateView):
             loteO = self.calcularLO(codArt, proveedor)
             puntoP = self.calcularPP(codArt, proveedor)
             stockS = self.calcularSSLote(proveedor)
+            cgi = self.calcularCGI(codArt, proveedor)
 
             articulo.loteOptimo = loteO
             articulo.puntoPedido = puntoP
             articulo.stockSeguridad = stockS
-            print(f"ss = {stockS}, pp = {puntoP}, loteOptimo = {loteO}")
+            articulo.cgi = cgi
             
         else:
             stockS = self.calcularSSInt(proveedor, codArt)
             q = self.calcularQ(proveedor, stockS, codArt)
             puntoP = self.calcularPPIF(codArt, proveedor, stockS)
+            cgi = self.calcularCGI(codArt, proveedor)
             
             articulo.stockSeguridad = stockS
             articulo.cantidasIntervaloFijo = q
             articulo.puntoPedido = puntoP
-            
-            print(f"ss = {stockS}, pp = {puntoP}, Q = {q}")
-            
+            articulo.cgi = cgi
         
         articulo.save()
         return super().form_valid(form)
@@ -782,6 +816,32 @@ class AsignarProveedorView(UpdateView):
         puntoPedido = PPIF(demandad, l, stockS)
         
         return puntoPedido
+    
+    def calcularCGI(self, cod_art, proveedor):
+        anio = datetime.now().year
+        mes = datetime.now().month
+        if mes != 1 :
+            mes -= 1
+        else:
+            anio -= 1
+            mes = 12
+            
+        demanda = get_object_or_404(Demanda, articulo=cod_art, anioDemanda=anio, mesDemanda=mes)
+        d = demanda.demandaReal
+        cp = proveedor.costo_pedido
+        p = proveedor.precioXunidad
+        
+        #busco la cantidad que pide segun el metodo
+        articulo = get_object_or_404(Articulo, codArticulo=cod_art)
+        if articulo.modeloInventario.nombreMI == "Lote Fijo":
+            q = articulo.loteOptimo
+        else:
+            q = articulo.cantidasIntervaloFijo
+        
+        cgi = CGI(d, q, cp, p)
+        
+        return cgi
+        
         
     
 class CrearOrdenDeCompraView(CreateView):
@@ -819,11 +879,12 @@ class ListarOrdenesDeCompraView(ListView):
     template_name = 'listar_ordenes_de_compra.html'
     context_object_name = 'ordenes'
     
-    
-    
-    
-    
-        
+       
+
+
+def promedioMasFavorable():
+    pass
+         
 def promedioExponencia(demandaPredecidaAnterior, demandaRealAnterior, cofSua):
     Xp = ceil(demandaPredecidaAnterior + cofSua * (demandaRealAnterior - demandaPredecidaAnterior))
     return Xp
@@ -915,7 +976,6 @@ def SSIF (dd,cp,l):
 def QIF (dd,cp,l,ss):
     ca = 10
     k = 100
-    z = 1.64
     t =  math.sqrt((2/dd)*(cp/ca)*(1/(1-(dd/k))))
     q= dd*(t+l)+ss
     return q
@@ -923,3 +983,16 @@ def QIF (dd,cp,l,ss):
 def PPIF(dd,l,ss):
     pp = (dd * l)+ss
     return pp
+
+def CGI(d,q,cp,p):
+    ca = 10
+    
+    #costo de compra
+    cc = p*d
+    #Costo de Almacenamiento
+    ca = ca * (q/2)
+    #Costo de Pedido
+    cp = cp*(d/q)
+    # CGI
+    cgi = ceil(cc + ca + cp)
+    return cgi

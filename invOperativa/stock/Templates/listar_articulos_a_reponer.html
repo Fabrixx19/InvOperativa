@@ -36,6 +36,7 @@
                                 <th scope="col" style="background-color: rgba(221, 182, 9, 0.795);">Estado</th>
                                 <th scope="col" style="background-color: rgba(221, 182, 9, 0.795);">Modelo Inventario</th>
                                 <th scope="col" style="background-color: rgba(221, 182, 9, 0.795);">Proveedor</th>
+                                <th scope="col" style="background-color: rgba(221, 182, 9, 0.795);">CGI</th>
                                 <th scope="col" style="background-color: rgba(221, 182, 9, 0.795);">Asignar Proveedor</th>
                                 <th scope="col" style="background-color: rgba(221, 182, 9, 0.795);">Ventas</th>
                                 <th scope="col" style="background-color: rgba(221, 182, 9, 0.795);">Demandas</th>
@@ -55,6 +56,7 @@
                                 <td>{{ articulo.estado.nombreEA }}</td>
                                 <td>{{ articulo.modeloInventario.nombreMI }}</td>
                                 <td>{{ articulo.proveedor.nombreProveedor }}</td>
+                                <td>{{ articulo.cgi }}</td>
                                 <td><a href="{% url 'asignar_proveedor' articulo.pk %}">Cambiar Proveedor</a></td>
                                 <td><a href="{% url 'ventas_articulo' articulo.pk %}" class="btn btn-outline-warning btn-sm"><i class="bi bi-bar-chart-line"></i> Ver Ventas</a></td>
                                 <td><a href="{% url 'demandas_articulo' articulo.pk %}" class="btn btn-outline-warning btn-sm"><i class="bi bi-file-earmark-text"></i> Ver Demandas</a></td>

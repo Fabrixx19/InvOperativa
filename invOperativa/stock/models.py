@@ -26,6 +26,7 @@ class Articulo(models.Model):
     puntoPedido = models.IntegerField(default=0)
     stockSeguridad = models.IntegerField(default=0)
     loteOptimo = models.IntegerField(default=0)
+    cgi = models.FloatField(default=0)
     cantidasIntervaloFijo = models.IntegerField(default=0)
     estado = models.ForeignKey(EstadoArticulo, on_delete=models.CASCADE, related_name='articulos')
     modeloInventario = models.ForeignKey(ModeloInventario, on_delete=models.CASCADE, related_name="articulos")
@@ -54,13 +55,13 @@ class MetodoError(models.Model):
     
 class Prediccion_Demanda(models.Model):
     codPD = models.IntegerField(primary_key=True)
-    cantPeriodos = models.IntegerField() #ingresa
-    coeficienteSuavizacion = models.FloatField() #ingresa
-    errorAceptable = models.FloatField() #ingresa
+    cantPeriodos = models.IntegerField(null=True) #ingresa
+    coeficienteSuavizacion = models.FloatField(null=True) #ingresa
+    errorAceptable = models.FloatField(null=True) #ingresa
     mesPrediccion = models.IntegerField()    #ingresa
     anioPrediccion = models.IntegerField()   #ingresa
     articulo = models.ForeignKey(Articulo, on_delete=models.CASCADE, related_name='predicciones')
-    metodoError = models.ForeignKey(MetodoError, on_delete=models.CASCADE, related_name='predicciones') #Ingresar
+    metodoError = models.ForeignKey(MetodoError, on_delete=models.CASCADE, related_name='predicciones', null=True) #Ingresar
     
 
 class EstadoOrdenCompra(models.Model):

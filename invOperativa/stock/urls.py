@@ -27,6 +27,7 @@ urlpatterns = [
     path('resultado_demanda/<int:resultado>/<str:metodo>/', resultado_demanda_view, name='resultado_demanda'),
     path('lista_articulos_faltantes/', ListaArticulosFaltantes.as_view(), name='lista_articulos_faltantes'),
     path('lista_articulos_reponer/', ListaArticulosReponer.as_view(), name='lista_articulos_reponer'),
+    path('predecir_masfavorable/', PrediccionMasFavorableView.as_view(), name='predecir_masfavorable'),
 
 
 
