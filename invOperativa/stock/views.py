@@ -193,6 +193,7 @@ class ListaArticulos(ListView):
     def get_queryset(self):
         return Articulo.objects.filter(fechaBajaArticulo__isnull=True)   
 
+
 class ListaArticulosFaltantes(ListView):
     model = Articulo
     template_name = 'listar_articulos_faltantes.html'
@@ -200,6 +201,7 @@ class ListaArticulosFaltantes(ListView):
 
     def get_queryset(self):
         return Articulo.objects.filter(fechaBajaArticulo__isnull=True, estado__nombreEA='Faltante')   
+
 
 class ListaArticulosReponer(ListView):
     model = Articulo
@@ -209,9 +211,12 @@ class ListaArticulosReponer(ListView):
     def get_queryset(self):
         return Articulo.objects.filter(fechaBajaArticulo__isnull=True, estado__nombreEA='Reponer')   
 
+
 def ver_demandas_articulo(request, articulo_id):
     articulo = get_object_or_404(Articulo, pk=articulo_id)
     demandas = articulo.demandas.exclude(demandaPredecida=0, demandaReal=0).order_by('-anioDemanda', '-mesDemanda')
+    for demanda in demandas:
+        demanda.error_prediccion = abs(demanda.demandaReal - demanda.demandaPredecida)
     return render(request, 'demandas_articulos.html', {'articulo': articulo, 'demandas': demandas})
 
 
@@ -225,16 +230,15 @@ class PredecirDemanda(CreateView):
     model = Prediccion_Demanda
     form_class = PrediccionDemandaForm
     template_name = 'crear_prediccion.html'
-    success_url = reverse_lazy('pendientes')
+    success_url = reverse_lazy('inicio')
     
     def form_valid(self, form):
         response = super().form_valid(form)
         prediccion = self.object  
         
         cant_periodos = form.cleaned_data['cantPeriodos']
-        mes_primer_periodo = form.cleaned_data['mesPrediccion']
-        anio_primer_periodo = form.cleaned_data['anioPrediccion']
-        error_aceptable = form.cleaned_data['errorAceptable']
+        mes_prediccion = form.cleaned_data['mesPrediccion']
+        anio_prediccion = form.cleaned_data['anioPrediccion']
         cod_art = form.cleaned_data['articulo']
         
         # Obtener pesos del formulario
@@ -252,15 +256,15 @@ class PredecirDemanda(CreateView):
         
         metodo_error = form.cleaned_data['metodoError']
         if metodo_error.nombreME == "Cuadrado Medio":
-            error_exp = self.metodo_cuadrado(prediccion, demanda_exponencial)
-            error_ponderado = self.metodo_cuadrado(prediccion, demanda_ponderado)
-            error_regresion = self.metodo_cuadrado(prediccion, demanda_regresion)
-            error_estacional = self.metodo_cuadrado(prediccion, demanda_estacional)
+            error_exp = self.metodo_cuadrado(prediccion, demanda_exponencial, cod_art)
+            error_ponderado = self.metodo_cuadrado(prediccion, demanda_ponderado, cod_art)
+            error_regresion = self.metodo_cuadrado(prediccion, demanda_regresion, cod_art)
+            error_estacional = self.metodo_cuadrado(prediccion, demanda_estacional, cod_art)
         else:
-            error_exp = self.metodo_porcentual(prediccion, demanda_exponencial)
-            error_ponderado = self.metodo_porcentual(prediccion, demanda_ponderado)
-            error_regresion = self.metodo_porcentual(prediccion, demanda_regresion)
-            error_estacional = self.metodo_porcentual(prediccion, demanda_estacional)
+            error_exp = self.metodo_porcentual(prediccion, demanda_exponencial, cod_art)
+            error_ponderado = self.metodo_porcentual(prediccion, demanda_ponderado, cod_art)
+            error_regresion = self.metodo_porcentual(prediccion, demanda_regresion, cod_art)
+            error_estacional = self.metodo_porcentual(prediccion, demanda_estacional, cod_art)
         
         # Almacenar los resultados en la sesión
         self.request.session['resultados_prediccion'] = {
@@ -272,23 +276,27 @@ class PredecirDemanda(CreateView):
             'error_ponderado': error_ponderado,
             'error_regresion': error_regresion,
             'error_estacional': error_estacional,
-            'mes_primer_periodo': mes_primer_periodo,
-            'anio_primer_periodo': anio_primer_periodo,
-            'error_aceptable': error_aceptable
+            'mes_prediccion': mes_prediccion,
+            'anio_prediccion': anio_prediccion,
+            'articulo_id': cod_art.codArticulo,
         }
+        
+        # Asignar la predicción como predeterminada para el artículo
+        cod_art.prediccion_predeterminada = prediccion
+        cod_art.save()
         
         # Redirigir a la vista de resultados
         return redirect('resultados_demanda')
     
-    def metodo_exponen(self, prediccion, codArt):
-        mes = prediccion.mesPrimerPeriodo
-        anio = prediccion.anioPrimerPeriodo
+    def metodo_exponen(self, prediccion, cod_art):
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
         if mes == 1:
             mes = 13
             anio -= 1
         
         cofSua = prediccion.coeficienteSuavizacion
-        demandaAnterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1, codArticulo=codArt)
+        demandaAnterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1, articulo_id=cod_art)
         demanda_real_anterior = demandaAnterior.demandaReal
         demanda_predecida_anterior = demandaAnterior.demandaPredecida
         if demanda_predecida_anterior == 0:
@@ -296,49 +304,48 @@ class PredecirDemanda(CreateView):
                 mes = 14
                 anio -= 1
                 
-            demanda_predecida_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-2, codArticulo=codArt).demandaReal
+            demanda_predecida_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-2, articulo_id=cod_art).demandaReal
         
         demanda_predecida_exponencial = promedioExponencia(demanda_predecida_anterior, demanda_real_anterior, cofSua)
         return demanda_predecida_exponencial    
         
-    def metodo_ponderado(self, prediccion, pesos, codArt):
+    def metodo_ponderado(self, prediccion, pesos, cod_art):
         n = prediccion.cantPeriodos
-        mes = prediccion.mesPrimerPeriodo
-        anio = prediccion.anioPrimerPeriodo
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
         
         demandas = []
         for i in range(1,n+1):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, codArticulo=codArt)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, articulo_id=cod_art)
             demandas.append(prediccion_anterior.demandaReal)
-        print(f"las demandas que mande son {demandas}")
         
         demanda_ponde = promedio_movil_ponderado(demandas, pesos)
         return demanda_ponde
         
-    def metodo_regresion(self, prediccion, codArt):
+    def metodo_regresion(self, prediccion, cod_art):
         
         n = prediccion.cantPeriodos
-        mes = prediccion.mesPrimerPeriodo
-        anio = prediccion.anioPrimerPeriodo
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
         
         demandas = []
         for i in range(1,n+1):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, codArticulo=codArt)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, articulo_id=cod_art)
             demandas.append(prediccion_anterior.demandaReal)
         
         demanda_regresion = regresion_lineal(demandas, n)
         return demanda_regresion
     
-    def metodo_estacional(self, prediccion, regresion, codArt):
+    def metodo_estacional(self, prediccion, regresion, cod_art):
         n = prediccion.cantPeriodos
-        mes = prediccion.mesPrimerPeriodo
-        anio = prediccion.anioPrimerPeriodo
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
         
         demandasActual = []
         demandasAnterior1 = []
@@ -347,72 +354,74 @@ class PredecirDemanda(CreateView):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-1, mesDemanda=mes-i, codArticulo=codArt)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-1, mesDemanda=mes-i, articulo_id=cod_art)
             demandasActual.append(prediccion_anterior.demandaReal)
             
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-2, mesDemanda=mes-i, codArticulo=codArt)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-2, mesDemanda=mes-i, articulo_id=cod_art)
             demandasAnterior1.append(prediccion_anterior.demandaReal)
             
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-3, mesDemanda=mes-i, codArticulo=codArt)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-3, mesDemanda=mes-i, articulo_id=cod_art)
             demandasAnterior2.append(prediccion_anterior.demandaReal)
         
         demandaEstacional = estacionalidad(demandasActual, demandasAnterior1, demandasAnterior2, regresion)
         return demandaEstacional
     
-    def metodo_cuadrado(self, prediccion, demanda,):
+    def metodo_cuadrado(self, prediccion, demanda, cod_art):
         n = prediccion.cantPeriodos
-        mes = prediccion.mesPrimerPeriodo
-        anio = prediccion.anioPrimerPeriodo
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
         
         demandas = []
         for i in range(0,n):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, codArticulo=codArt)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, articulo_id=cod_art)
             demandas.append(prediccion_anterior.demandaReal)
         demandas_predecidas = [demanda]
         for i in range(1,n):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, codArticulo=codArt)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, articulo_id=cod_art)
             demandaP = prediccion_anterior.demandaPredecida
             if demandaP == 0:
                 if mes <= i+1:
                     mes = 13+i
                     anio -= 1
-                prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-(i+1))
+                prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-(i+1), articulo_id=cod_art)
                 demandaP = prediccion_anterior.demandaReal
             demandas_predecidas.append(demandaP)
+            
+        print(f"Las demandas predecidas son: {demandas_predecidas}")
         
         error_cuadrado = error_cuadrado_medio(demandas, demandas_predecidas)
         return error_cuadrado
     
-    def metodo_porcentual(self, prediccion, demanda):
+    def metodo_porcentual(self, prediccion, demanda, cod_art):
         n = prediccion.cantPeriodos
-        mes = prediccion.mesPrimerPeriodo
-        anio = prediccion.anioPrimerPeriodo
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
         
         demandas = []
         for i in range(0,n):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, articulo_id=cod_art)
             demandas.append(prediccion_anterior.demandaReal)
         demandas_predecidas = [demanda]
         for i in range(1,n):
             if mes <= i:
                 mes = 13
                 anio -= 1
-            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i)
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, articulo_id=cod_art)
             demandaP = prediccion_anterior.demandaPredecida
             if demandaP == 0:
                 if mes <= i+1:
                     mes = 13+i
                     anio -= 1
-                prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-(i+1))
+                prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-(i+1), articulo_id=cod_art)
                 demandaP = prediccion_anterior.demandaReal
             demandas_predecidas.append(demandaP)
         
@@ -519,10 +528,122 @@ class PrediccionExponencialView(FormView):
         demanda_predecida_exponencial = promedioExponencia(demanda_predecida_anterior, demanda_real_anterior, cofSua)
         return demanda_predecida_exponencial 
 
+
 class PrediccionMasFavorableView(FormView):
     template_name = 'prediccion_mas_favorable.html'  # Nombre del template HTML
     form_class = PrediccionMasFavorableForm
-    success_url = reverse_lazy('resultado_demanda')  # URL a redirigir después de guardar el formulario
+    
+    def form_valid(self, form):
+        mes_prediccion = form.cleaned_data['mesPrediccion']
+        anio_prediccion = form.cleaned_data['anioPrediccion']
+        articulo = form.cleaned_data['articulo']
+        
+        # busco la prediccion predeterminada
+        prediccion = articulo.prediccion_predeterminada
+        prediccion.mesPrediccion = mes_prediccion
+        prediccion.anioPrediccion = anio_prediccion
+        
+        # busco el metodo predeterminado
+        metodoo = articulo.metodo
+        
+        # manejo los distintos metodos
+        if metodoo == "Exponencial":
+            demanda = self.metodo_exponen(prediccion, articulo)
+        elif metodoo == "Ponderado":
+            pesos = prediccion.pesos     
+            demanda = self.metodo_ponderado(prediccion, pesos, articulo)
+        elif metodoo == "Regresion":
+            demanda = self.metodo_regresion(prediccion, articulo)
+        elif metodoo == "Estacional":
+            demanda_exp = self.metodo_exponen(prediccion, articulo)
+            demanda = self.metodo_estacional(prediccion, demanda_exp, articulo)
+        
+        # asigno la prediccion
+        demandaaa = get_object_or_404(Demanda, anioDemanda=anio_prediccion, mesDemanda=mes_prediccion, articulo_id=articulo.codArticulo)
+        demandaaa.demandaPredecida = demanda
+        demandaaa.save()
+        
+        # Redirigir a la URL con los argumentos necesarios
+        return redirect('resultado_demanda', resultado=demanda, metodo=metodoo)
+    
+    def metodo_exponen(self, prediccion, cod_art):
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
+        if mes == 1:
+            mes = 13
+            anio -= 1
+        
+        cofSua = prediccion.coeficienteSuavizacion
+        demandaAnterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-1, articulo_id=cod_art)
+        demanda_real_anterior = demandaAnterior.demandaReal
+        demanda_predecida_anterior = demandaAnterior.demandaPredecida
+        if demanda_predecida_anterior == 0:
+            if mes == 2:
+                mes = 14
+                anio -= 1
+                
+            demanda_predecida_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-2, articulo_id=cod_art).demandaReal
+        
+        demanda_predecida_exponencial = promedioExponencia(demanda_predecida_anterior, demanda_real_anterior, cofSua)
+        return demanda_predecida_exponencial    
+        
+    def metodo_ponderado(self, prediccion, pesos, cod_art):
+        n = prediccion.cantPeriodos
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
+        
+        demandas = []
+        for i in range(1,n+1):
+            if mes <= i:
+                mes = 13
+                anio -= 1
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, articulo_id=cod_art)
+            demandas.append(prediccion_anterior.demandaReal)
+        
+        demanda_ponde = promedio_movil_ponderado(demandas, pesos)
+        return demanda_ponde
+        
+    def metodo_regresion(self, prediccion, cod_art):
+        
+        n = prediccion.cantPeriodos
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
+        
+        demandas = []
+        for i in range(1,n+1):
+            if mes <= i:
+                mes = 13
+                anio -= 1
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes-i, articulo_id=cod_art)
+            demandas.append(prediccion_anterior.demandaReal)
+        
+        demanda_regresion = regresion_lineal(demandas, n)
+        return demanda_regresion
+    
+    def metodo_estacional(self, prediccion, regresion, cod_art):
+        n = prediccion.cantPeriodos
+        mes = prediccion.mesPrediccion
+        anio = prediccion.anioPrediccion
+        
+        demandasActual = []
+        demandasAnterior1 = []
+        demandasAnterior2 = []
+        for i in range(n):
+            if mes <= i:
+                mes = 13
+                anio -= 1
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-1, mesDemanda=mes-i, articulo_id=cod_art)
+            demandasActual.append(prediccion_anterior.demandaReal)
+            
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-2, mesDemanda=mes-i, articulo_id=cod_art)
+            demandasAnterior1.append(prediccion_anterior.demandaReal)
+            
+            prediccion_anterior = get_object_or_404(Demanda, anioDemanda=anio-3, mesDemanda=mes-i, articulo_id=cod_art)
+            demandasAnterior2.append(prediccion_anterior.demandaReal)
+        
+        demandaEstacional = estacionalidad(demandasActual, demandasAnterior1, demandasAnterior2, regresion)
+        return demandaEstacional
+        
 
 
 class PrediccionRegresionView(FormView):
@@ -641,9 +762,9 @@ class ResultadosDemanda(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         resultados = self.request.session.get('resultados_prediccion', {})
-        error_aceptable = resultados.get('error_aceptable')
-        mes = resultados.get('mes_primer_periodo')
-        anio = resultados.get('anio_primer_periodo')
+        mes = resultados.get('mes_prediccion')
+        anio = resultados.get('anio_prediccion')
+        cod_art = resultados.get('articulo_id')
         errores = {
             'Suavización Exponencial': resultados.get('error_exp'),
             'Promedio Móvil Ponderado': resultados.get('error_ponderado'),
@@ -651,38 +772,41 @@ class ResultadosDemanda(TemplateView):
             'Estacional': resultados.get('error_estacional')
         }
         
-        # Filtrar los errores que no son menores al error aceptable
-        errores_validos = {metodo: error for metodo, error in errores.items() if error >= error_aceptable}
-        
-        # Encontrar el error más cercano al aceptable
-        if errores_validos:
-            error_cercano_metodo, error_cercano_valor = min(errores_validos.items(), key=lambda x: abs(x[1] - error_aceptable))
-        else:
-            error_cercano_metodo, error_cercano_valor = None, None
-        
+        # Encontrar el error menor
+        error_menor_metodo, error_menor_valor = min(errores.items(), key=lambda item: item[1])
+
         context.update(resultados)
-        context['error_cercano_metodo'] = error_cercano_metodo
-        context['error_cercano_valor'] = error_cercano_valor
+        context['error_menor_metodo'] = error_menor_metodo
+        context['error_menor_valor'] = error_menor_valor
         
-        if error_cercano_metodo == 'Suavización Exponencial':
+        if error_menor_metodo == 'Suavización Exponencial':
             demanda_predecida = resultados.get("demanda_exponencial")
-        elif error_cercano_metodo == "Promedio Móvil Ponderado":
+            metodo = "Exponencial"
+        elif error_menor_metodo == "Promedio Móvil Ponderado":
             demanda_predecida = resultados.get("demanda_ponderado")
-        elif error_cercano_metodo == "Regresión Lineal":
+            metodo = "Ponderado"
+        elif error_menor_metodo == "Regresión Lineal":
             demanda_predecida = resultados.get("demanda_regresion")
-        elif error_cercano_metodo == "Estacional":
+            metodo = "Regresion"
+        elif error_menor_metodo == "Estacional":
             demanda_predecida = resultados.get("demanda_estacional")
-        else:
-            demanda_predecida = None
+            metodo = "Estacional"
 
         if demanda_predecida is not None:
             demanda_predecida = int(demanda_predecida)
             # Obtener la demanda para el periodo especificado
-            demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes)
+            demanda = get_object_or_404(Demanda, anioDemanda=anio, mesDemanda=mes, articulo_id=cod_art)
             # Actualizar la demanda predicha con el valor de demanda aceptada
             demanda.demandaPredecida = demanda_predecida
             # Guardar la demanda actualizada
             demanda.save()
+            
+            #obtener articulo
+            articulo = get_object_or_404(Articulo, codArticulo=cod_art)
+            #Asigno el metodo predeterminado
+            articulo.metodo = metodo
+            #guardo el articulo
+            articulo.save()
             
         return context
 
@@ -706,22 +830,29 @@ class AsignarProveedorView(UpdateView):
             loteO = self.calcularLO(codArt, proveedor)
             puntoP = self.calcularPP(codArt, proveedor)
             stockS = self.calcularSSLote(proveedor)
-            cgi = self.calcularCGI(codArt, proveedor)
+            
 
             articulo.loteOptimo = loteO
             articulo.puntoPedido = puntoP
             articulo.stockSeguridad = stockS
+            
+            articulo.save()
+            
+            cgi = self.calcularCGI(codArt, proveedor)
             articulo.cgi = cgi
             
         else:
             stockS = self.calcularSSInt(proveedor, codArt)
             q = self.calcularQ(proveedor, stockS, codArt)
             puntoP = self.calcularPPIF(codArt, proveedor, stockS)
-            cgi = self.calcularCGI(codArt, proveedor)
             
             articulo.stockSeguridad = stockS
             articulo.cantidasIntervaloFijo = q
             articulo.puntoPedido = puntoP
+            
+            articulo.save()
+            
+            cgi = self.calcularCGI(codArt, proveedor)
             articulo.cgi = cgi
         
         articulo.save()
@@ -842,8 +973,7 @@ class AsignarProveedorView(UpdateView):
         
         return cgi
         
-        
-    
+            
 class CrearOrdenDeCompraView(CreateView):
     model = OrdenDeCompra
     form_class = OrdenDeCompraForm
@@ -879,11 +1009,9 @@ class ListarOrdenesDeCompraView(ListView):
     template_name = 'listar_ordenes_de_compra.html'
     context_object_name = 'ordenes'
     
-       
 
 
-def promedioMasFavorable():
-    pass
+
          
 def promedioExponencia(demandaPredecidaAnterior, demandaRealAnterior, cofSua):
     Xp = ceil(demandaPredecidaAnterior + cofSua * (demandaRealAnterior - demandaPredecidaAnterior))
@@ -939,15 +1067,15 @@ def estacionalidad(demandasActual, demandasPasado1, demandasPasado2, demandaRegr
 def error_cuadrado_medio(demandas_real, demandas_predecidas):
     sumatoria = 0
     for i in range(len(demandas_real)):
-        sumatoria = (demandas_predecidas[i]-demandas_real[i])**2
-    error_cm = sumatoria/len(demandas_real)
+        sumatoria += (demandas_predecidas[i]-demandas_real[i])**2
+    error_cm = round(sumatoria/len(demandas_real),2)
     return error_cm
 
 def error_porcentual(demandas_real, demandas_predecidas):
     sumatoria = 0
     for i in range(len(demandas_real)):
-        sumatoria = (demandas_predecidas[i]-demandas_real[i])*100/demandas_real[i]
-    error_porcentual = sumatoria/len(demandas_real)
+        sumatoria += (abs(demandas_predecidas[i]-demandas_real[i]))*100/demandas_real[i]
+    error_porcentual = round(sumatoria/len(demandas_real),2)
     return error_porcentual
 
 def EOQ(d, cp):

@@ -45,8 +45,8 @@
                 <h2 class="card-title">Periodo predecido</h2>
             </div>
             <div class="card-body">
-                <p><strong>Mes:</strong> {{ mes_primer_periodo }}</p>
-                <p><strong>Año:</strong> {{ anio_primer_periodo }}</p>
+                <p><strong>Mes:</strong> {{ mes_prediccion }}</p>
+                <p><strong>Año:</strong> {{ anio_prediccion }}</p>
             </div>
         </div>
 
@@ -69,13 +69,8 @@
                 <h2 class="card-title">Predicción Aceptada</h2>
             </div>
             <div class="card-body">
-                <p><strong>Error Aceptable:</strong> {{ error_aceptable }}</p>
-                {% if error_cercano_metodo %}
-                    <p><strong>Método:</strong> {{ error_cercano_metodo }}</p>
-                    <p><strong>Error Cercano:</strong> {{ error_cercano_valor }}</p>
-                {% else %}
-                    <p>No hay errores mayores o iguales al error aceptable.</p>
-                {% endif %}
+                <p><strong>Método:</strong> {{ error_menor_metodo }}</p>
+                <p><strong>Error Menor:</strong> {{ error_menor_valor }}</p>
             </div>
         </div>
     </div>

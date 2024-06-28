@@ -1,13 +1,6 @@
 from django import forms
 from .models import *
 
-# Aqui vamos a ingresar los valores que necesitamos para la prediccion
-
-#Formulario para que el usuario ingrese mes y año
-class DatosPrediccionFrom(forms.Form):
-    mes = forms.ChoiceField(choices=[(str(i),i) for i in range(1,13)])
-    anio = forms.ChoiceField(choices=[(str(i),i) for i in range(2000,2100)])
-
 
 class VentaForm(forms.ModelForm):
     class Meta:
@@ -39,10 +32,11 @@ class ArticuloForm(forms.ModelForm):
         self.fields['modeloInventario'].empty_label = None
         self.fields['modeloInventario'].label_from_instance = lambda obj: obj.nombreMI
 
+
 class PrediccionDemandaForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
-        fields = ['cantPeriodos', 'coeficienteSuavizacion', 'articulo', 'errorAceptable', 'mesPrediccion', 'anioPrediccion', 'metodoError']
+        fields = ['cantPeriodos', 'coeficienteSuavizacion', 'articulo', 'mesPrediccion', 'anioPrediccion', 'metodoError']
         
     pesos = forms.CharField(widget=forms.Textarea, help_text="Ingrese los pesos separados por comas.")
 
@@ -53,6 +47,7 @@ class PrediccionDemandaForm(forms.ModelForm):
         self.fields['articulo'].queryset = Articulo.objects.filter(fechaBajaArticulo__isnull=True)
         self.fields['articulo'].label_from_instance = lambda obj: obj.nombreArticulo
 
+
 class PrediccionExponencialForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
@@ -62,6 +57,7 @@ class PrediccionExponencialForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['articulo'].queryset = Articulo.objects.filter(fechaBajaArticulo__isnull=True)
         self.fields['articulo'].label_from_instance = lambda obj: obj.nombreArticulo
+
 
 class PrediccionPonderadoForm(forms.ModelForm):
     class Meta:
@@ -75,6 +71,7 @@ class PrediccionPonderadoForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['articulo'].queryset = Articulo.objects.filter(fechaBajaArticulo__isnull=True)
         self.fields['articulo'].label_from_instance = lambda obj: obj.nombreArticulo
+
 
 class PrediccionMasFavorableForm(forms.ModelForm):
     class Meta:
@@ -97,6 +94,7 @@ class PrediccionRegresionForm(forms.ModelForm):
         self.fields['articulo'].queryset = Articulo.objects.filter(fechaBajaArticulo__isnull=True)
         self.fields['articulo'].label_from_instance = lambda obj: obj.nombreArticulo
 
+
 class PrediccionEstacionalForm(forms.ModelForm):
     class Meta:
         model = Prediccion_Demanda
@@ -106,6 +104,7 @@ class PrediccionEstacionalForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['articulo'].queryset = Articulo.objects.filter(fechaBajaArticulo__isnull=True)
         self.fields['articulo'].label_from_instance = lambda obj: obj.nombreArticulo
+
 
 class AsignarProveedorForm(forms.ModelForm):
     class Meta:
