@@ -645,7 +645,6 @@ class PrediccionMasFavorableView(FormView):
         return demandaEstacional
         
 
-
 class PrediccionRegresionView(FormView):
     template_name = 'prediccion_regresion.html'  # Nombre del template HTML
     form_class = PrediccionRegresionForm
@@ -992,12 +991,20 @@ class VerificarEntregasView(View):
         fecha_actual = datetime.now().date()
         
         estado_entregada = EstadoOrdenCompra.objects.get(nombreEC='Entregado')
+        estado_normal = EstadoArticulo.objects.get(nombreEA='Normal')
         
         for orden in pendientes:
             fecha_entrega = orden.fechaOrden + timedelta(days=orden.diasDemoraOrden)
             if fecha_entrega <= fecha_actual:
                 orden.estado = estado_entregada
-                orden.articulo.stockArticulo += orden.cantidad
+                
+                articulo = orden.articulo
+                articulo.stockArticulo += orden.cantidad
+                
+                # Verificar si el stock es superior al puntoPedido
+                if articulo.stockArticulo > articulo.puntoPedido:
+                    articulo.estado = estado_normal
+                
                 orden.articulo.save()
                 orden.save()
         
