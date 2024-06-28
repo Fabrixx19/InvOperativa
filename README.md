@@ -6,6 +6,6 @@ Grupo 8
  Avallone, 
  Behncke, 
  Rodeghiero, 
- Sampieri, 
+ Sampieri
 
 # El codigo se encuentra en la carpeta invOperativa
