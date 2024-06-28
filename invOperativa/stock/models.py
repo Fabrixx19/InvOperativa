@@ -37,6 +37,7 @@ class Articulo(models.Model):
     metodo = models.TextField(default="", null=True, blank=True)
     prediccion_predeterminada = models.ForeignKey('Prediccion_Demanda', on_delete=models.SET_NULL, related_name='articulos_predeterminados', null=True, blank=True)
 
+
 class Demanda(models.Model):
     codDemanda = models.AutoField(primary_key=True)
     demandaReal = models.IntegerField(default=0)

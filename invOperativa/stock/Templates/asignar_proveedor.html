@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asignar Proveedor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -48,17 +47,49 @@
     <a href="{% url 'lista_articulos' %}" class="btn btn-warning mb-3"><i class="bi bi-arrow-left-square-fill"></i> Volver a la lista de artículos</a>
 
     <div class="form-container my-4">
-        <p>Seleccione el proveedor que desea asignar al articulo:</p>
+        <p>Seleccione el proveedor que desea asignar al artículo:</p>
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
+            <div id="detalles-proveedor">
+                <p>Días de Demora: <span id="diasDeDemora"></span></p>
+                <p>Precio por Unidad: <span id="precioXunidad"></span></p>
+                <p>Costo por Pedido: <span id="costo_pedido"></span></p>
+            </div>
             <button type="submit" class="btn btn-custom w-100">Guardar</button>
         </form>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-iZc5avFbtpjQTZs1xWMP2IeO6/UHEf7rj3ZwD7SceEY9zWw81cvq5Z65b8oRYG6S" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const proveedorSelect = document.querySelector('select[name="proveedor"]');
+            const diasDeDemoraSpan = document.getElementById('diasDeDemora');
+            const precioXunidadSpan = document.getElementById('precioXunidad');
+            const costoPedidoSpan = document.getElementById('costo_pedido');
+
+            proveedorSelect.addEventListener('change', function () {
+                const codProveedor = this.value;
+                if (codProveedor) {
+                    fetch(`/obtener_proveedor/?codProveedor=${codProveedor}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            diasDeDemoraSpan.textContent = data.diasDeDemora;
+                            precioXunidadSpan.textContent = data.precioXunidad;
+                            costoPedidoSpan.textContent = data.costo_pedido;
+                        })
+                        .catch(error => console.error('Error fetching provider data:', error));
+                } else {
+                    diasDeDemoraSpan.textContent = '';
+                    precioXunidadSpan.textContent = '';
+                    costoPedidoSpan.textContent = '';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
+
 
 
 

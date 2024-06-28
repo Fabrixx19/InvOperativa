@@ -1008,7 +1008,17 @@ class ListarOrdenesDeCompraView(ListView):
     model = OrdenDeCompra
     template_name = 'listar_ordenes_de_compra.html'
     context_object_name = 'ordenes'
-    
+
+
+def obtener_proveedor(request):
+    cod_proveedor = request.GET.get('codProveedor')
+    proveedor = Proveedor.objects.get(codProveedor=cod_proveedor)
+    data = {
+        'diasDeDemora': proveedor.diasDeDemora,
+        'precioXunidad': proveedor.precioXunidad,
+        'costo_pedido': proveedor.costo_pedido,
+    }
+    return JsonResponse(data)  
 
 
 
@@ -1079,7 +1089,7 @@ def error_porcentual(demandas_real, demandas_predecidas):
     return error_porcentual
 
 def EOQ(d, cp):
-    ca = 1
+    ca = 10
     q = sqrt(2*d*(cp/ca))
     return ceil(q)
 
@@ -1096,14 +1106,14 @@ def SSLF (l):
 def SSIF (dd,cp,l):
     ca = 10
     z = 1.64
-    k = 100
+    k = 20
     t =  math.sqrt((2/dd)*(cp/ca)*(1/(1-(dd/k))))
     ss = z*math.sqrt(t+l)
     return ss
 
 def QIF (dd,cp,l,ss):
     ca = 10
-    k = 100
+    k = 20
     t =  math.sqrt((2/dd)*(cp/ca)*(1/(1-(dd/k))))
     q= dd*(t+l)+ss
     return q

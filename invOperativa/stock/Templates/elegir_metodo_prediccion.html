@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eleccion Metodo Prediccion</title>
+    <title>Elección Método Predicción</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -13,8 +13,10 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            margin: 0; /* Quitar márgenes del body */
-            padding-top: 20px; /* Separación desde la parte superior */
+            margin: 0;
+            padding-top: 20px;
+            background-color: #121212; /* Dark theme background */
+            color: #fff; /* Light text color for contrast */
         }
         .links-container {
             display: flex;
@@ -25,39 +27,54 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            margin-top: 100px;
+            margin-top: 50px;
         }
         .btn-custom {
             display: inline-block;
-            width: 200px; /* Botones grandes */
-            height: 60px; /* Botones grandes */
+            width: 200px;
+            height: 60px;
             margin: 10px;
-            background-color: #ffb703; /* Color oro */
+            background-color: #ffb703;
             color: black;
             text-align: center;
-            line-height: 60px; /* Para centrar el texto verticalmente */
-            text-decoration: none; /* Sin subrayado */
-            border-radius: 0; /* Botones cuadrados */
-            font-size: 1.2rem; /* Tamaño de texto grande */
+            line-height: 60px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            transition: background-color 0.3s, transform 0.3s;
         }
         .btn-custom:hover {
-            background-color: #ffa500; /* Color oro al pasar el cursor */
+            background-color: #ffa500;
+            transform: scale(1.05);
+        }
+        h1 {
+            margin-bottom: 40px;
+            text-align: center;
+            color: #ffb703;
+        }
+        .row {
+            width: 100%;
+        }
+        @media (max-width: 768px) {
+            .row .col-12 {
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1 class="card-title mb-4 text-center text-warning my-4">Elegir Metodo De Prediccion <i class="bi bi-calculator-fill"></i></h1>
+    <h1 class="card-title mb-4 text-center text-warning my-4">Elegir Método de Predicción <i class="bi bi-calculator-fill"></i></h1>
 
     <div class="links-container">
         <div class="row justify-content-center">
             <div class="col-12 col-md-4">
-                <a href="{% url 'predecir_exponencial' %}"  href="#" class="btn-custom">Promedio Exponencial</a>
+                <a href="{% url 'predecir_exponencial' %}" class="btn-custom">Promedio Exponencial</a>
             </div>
             <div class="col-12 col-md-4">
-                <a href="{% url 'predecir_ponderado' %}" class="btn-custom">Prom. Movil Ponderado</a>
+                <a href="{% url 'predecir_ponderado' %}" class="btn-custom">Prom. Móvil Ponderado</a>
             </div>
             <div class="col-12 col-md-4">
-                <a href="{% url 'predecir_regresion' %}" class="btn-custom">Regresion Lineal</a>
+                <a href="{% url 'predecir_regresion' %}" class="btn-custom">Regresión Lineal</a>
             </div>
         </div>
         <div class="row justify-content-center">
@@ -65,11 +82,13 @@
                 <a href="{% url 'predecir_estacional' %}" class="btn-custom">Estacionalidad</a>
             </div>
             <div class="col-12 col-md-4">
-                <a href="{% url 'predecir_demanda' %}" class="btn-custom">Mas Favorable</a>
+                <a href="{% url 'predecir_demanda' %}" class="btn-custom">Más Favorable</a>
             </div>
             <div class="col-12 col-md-4">
                 <a href="{% url 'predecir_masfavorable' %}" class="btn-custom">Predeterminado</a>
             </div>
+        </div>
+        <div class="row justify-content-center">
             <div class="col-12 col-md-4">
                 <a href="{% url 'inicio' %}" class="btn-custom"><i class="bi bi-arrow-left-square-fill"></i> Volver al Inicio</a>
             </div>
@@ -79,4 +98,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-iZc5avFbtpjQTZs1xWMP2IeO6/UHEf7rj3ZwD7SceEY9zWw81cvq5Z65b8oRYG6S" crossorigin="anonymous"></script>
 </body>
 </html>
+
 
